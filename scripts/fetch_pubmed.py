@@ -7,6 +7,7 @@ PubMed → 분류 → Supabase 업서트 → (선택) Claude 한글 요약.
   ANTHROPIC_API_KEY         (선택) 없으면 요약 단계는 건너뜀
   NCBI_API_KEY              (선택) 있으면 PubMed 요청 한도가 10/s로 늘어남
   LOOKBACK_DAYS             (선택) config의 lookback_days 덮어쓰기
+  MAX_SUMMARIES             (선택) 이번 실행에서 만들 Claude 요약 개수 상한
 """
 import json, os, re, sys, time, datetime as dt
 import xml.etree.ElementTree as ET
@@ -16,7 +17,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CFG = json.load(open(os.path.join(ROOT, "config", "sources.json"), encoding="utf-8"))
 
 EUTILS = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils"
-SUPABASE_URL = os.environ["SUPABASE_URL"].strip().rstrip("/")
+SUPABASE_URL = re.sub(r"/(rest|auth|storage)/v1/?$", "", os.environ["SUPABASE_URL"].strip()).rstrip("/")
 SERVICE_KEY = os.environ["SUPABASE_SERVICE_ROLE_KEY"].strip()
 ANTHROPIC_KEY = (os.environ.get("ANTHROPIC_API_KEY") or "").strip() or None
 NCBI_KEY = (os.environ.get("NCBI_API_KEY") or "").strip() or None
@@ -50,8 +51,15 @@ def search_journal(journal, must_match):
     if must_match:
         kw = " OR ".join(f'"{k}"[Title/Abstract]' for k in must_match)
         term += f" AND ({kw})"
-    r = eutils("esearch.fcgi", {"db": "pubmed", "term": term, "retmax": 300, "retmode": "json"})
-    return r.json()["esearchresult"]["idlist"]
+    ids, start = [], 0
+    while True:  # 과거 논문 일괄 수집(lookback 크게)에도 잘리지 않도록 페이지 넘김
+        r = eutils("esearch.fcgi", {"db": "pubmed", "term": term, "retstart": start, "retmax": 500, "retmode": "json"})
+        res = r.json()["esearchresult"]
+        ids += res["idlist"]
+        start += 500
+        if start >= int(res.get("count", 0)):
+            break
+    return ids
 
 
 def fetch_details(pmids):
@@ -242,7 +250,7 @@ def main():
     if not ANTHROPIC_KEY:
         print("ANTHROPIC_API_KEY 없음 — 요약 건너뜀")
         return
-    limit = int(CFG.get("max_ai_summaries_per_run", 40))
+    limit = int(os.environ.get("MAX_SUMMARIES") or CFG.get("max_ai_summaries_per_run", 40))
     pending = sb_get("papers", {"select": "pmid,title,journal,pub_date,abstract,language",
                                 "summarized_at": "is.null", "abstract": "neq.",
                                 "order": "created_at.desc", "limit": limit})
