@@ -3,6 +3,7 @@ import { supabase, configured, callFunction } from "./lib/supabase";
 import { I18nContext, makeT, detectLang, LANGS } from "./lib/i18n";
 import Auth from "./components/Auth";
 import Pending from "./components/Pending";
+import ResetPassword from "./components/ResetPassword";
 import FilterRail from "./components/FilterRail";
 import PaperList from "./components/PaperList";
 import PaperDetail from "./components/PaperDetail";
@@ -25,6 +26,8 @@ export default function App() {
 function Shell() {
   const { t, lang, setLang } = useI18n();
   const [session, setSession] = useState(undefined);
+  // 재설정 메일 링크로 들어온 경우 (해시에 type=recovery)
+  const [recovery, setRecovery] = useState(() => /type=recovery/.test(window.location.hash || ""));
   const [me, setMe] = useState(undefined);
   const [view, setView] = useState("feed");
   const [group, setGroup] = useState("category");
@@ -51,7 +54,10 @@ function Shell() {
   useEffect(() => {
     if (!configured) return;
     supabase.auth.getSession().then(({ data }) => setSession(data.session));
-    const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => setSession(s));
+    const { data: sub } = supabase.auth.onAuthStateChange((event, s) => {
+      if (event === "PASSWORD_RECOVERY") setRecovery(true);
+      setSession(s);
+    });
     return () => sub.subscription.unsubscribe();
   }, []);
   const user = session?.user;
@@ -175,6 +181,7 @@ function Shell() {
 
   if (!configured) return <div className="auth"><div className="auth-card"><h1>Configuration needed</h1><p>Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to web/.env and restart.</p></div></div>;
   if (session === undefined) return null;
+  if (recovery && session) return <ResetPassword onDone={() => { setRecovery(false); window.location.hash = ""; }} />;
   if (!session) return <Auth />;
   if (me === undefined) return null;
   if (!approved) return <Pending user={user} blocked={me?.status === "blocked"} />;

@@ -18,14 +18,23 @@ export default function Admin({ user }) {
   const [reply, setReply] = useState({}); // feedback id -> draft
   const [msg, setMsg] = useState(null);
 
+  const [setupError, setSetupError] = useState(null);
+
   async function loadAll() {
-    const [o, u, a, f, g] = await Promise.all([
-      supabase.rpc("admin_overview"), supabase.rpc("admin_user_stats"),
-      supabase.from("announcements").select("*").order("created_at", { ascending: false }),
-      supabase.from("feedback").select("*").order("created_at", { ascending: false }).limit(100),
-      supabase.rpc("admin_summary_usage"),
-    ]);
-    setOverview(o.data); setUsers(u.data || []); setAnn(a.data || []); setFeedback(f.data || []); setUsage(g.data || []);
+    try {
+      const [o, u, a, f, g] = await Promise.all([
+        supabase.rpc("admin_overview"), supabase.rpc("admin_user_stats"),
+        supabase.from("announcements").select("*").order("created_at", { ascending: false }),
+        supabase.from("feedback").select("*").order("created_at", { ascending: false }).limit(100),
+        supabase.rpc("admin_summary_usage"),
+      ]);
+      // 마이그레이션이 아직 실행되지 않으면 함수/테이블이 없어 여기서 오류가 옴
+      const missing = [o, u, a, f, g].map((r) => r.error).find((e) => e && /does not exist|schema cache|relation/i.test(e.message));
+      setSetupError(missing ? missing.message : null);
+      setOverview(o.data); setUsers(u.data || []); setAnn(a.data || []); setFeedback(f.data || []); setUsage(g.data || []);
+    } catch (e) {
+      setSetupError(String(e?.message ?? e));
+    }
   }
   useEffect(() => { loadAll(); }, []);
 
@@ -55,6 +64,13 @@ export default function Admin({ user }) {
       <h1>{t("admin.title")}</h1>
       <p className="lead">{t("admin.lead")}</p>
       {msg && <p className={msg.err ? "err" : "ok"}>{msg.text}</p>}
+      {setupError && (
+        <div className="setup-warn">
+          <b>{t("admin.setupTitle")}</b>
+          <div>{t("admin.setupBody")}</div>
+          <code>{setupError}</code>
+        </div>
+      )}
 
       {overview && (
         <div className="stat-grid">

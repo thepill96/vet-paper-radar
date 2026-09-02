@@ -36,10 +36,18 @@ PubMed ──(GitHub Actions, 매일 07:00 KST)──▶ Supabase DB ◀──�
    - `anon` `public` 키 (웹앱용)
    - `service_role` 키 (수집 스크립트용 — **절대 웹앱이나 공개 저장소에 넣지 않기**)
 
-### 2. 로그인 방식
-- **이메일+비밀번호**: Authentication → Providers → Email 이 켜져 있는지 확인(기본 켜짐). 인증 메일을 받아야 로그인됩니다.
-- **Google**: Authentication → Providers → Google 켜기. Google Cloud Console에서 OAuth 클라이언트를 만들고 Client ID/Secret을 넣습니다(Supabase 화면에 안내되는 redirect URL을 Google 쪽 "승인된 리디렉션 URI"에 등록).
-- Authentication → URL Configuration → **Site URL**과 **Redirect URLs**에 배포 주소(`https://<GitHub아이디>.github.io/<저장소이름>/`)를 넣습니다. 로컬 테스트용으로 `http://localhost:5173`도 추가.
+### 2. 로그인 방식 (Google + 이메일)
+Supabase → Authentication → Providers에서 **Email**(기본 켜짐)과 **Google**을 모두 켭니다. 이메일 가입은 인증 메일 링크를 눌러야 로그인됩니다. Providers 화면에 표시되는 **Callback URL**(`https://xxxx.supabase.co/auth/v1/callback`)을 각 서비스에 등록하면 됩니다.
+
+**Google** (무료)
+1. console.cloud.google.com → 새 프로젝트 → API 및 서비스 → OAuth 동의 화면 → 외부(External), 앱 이름·이메일 입력.
+   테스트 모드로 두면 등록한 테스트 사용자 100명까지 쓸 수 있고 심사가 필요 없습니다.
+2. 사용자 인증 정보 → OAuth 클라이언트 ID → 웹 애플리케이션 → 승인된 리디렉션 URI에 Supabase Callback URL 등록.
+3. 만들어진 클라이언트 ID·보안 비밀번호를 Supabase의 Google Provider에 붙여 넣고 Enable → Save.
+
+(Apple 로그인은 Apple Developer Program 연 $99가 필요해 지금은 넣지 않았습니다. 나중에 추가하려면 Supabase의 Apple Provider를 켜고 `web/src/components/Auth.jsx`에 버튼을 하나 더 두면 됩니다.)
+
+**공통**: Authentication → URL Configuration의 Site URL과 Redirect URLs에 사이트 주소(`https://<아이디>.github.io/<저장소>/`)를 넣어야 로그인 후 제대로 돌아옵니다.
 
 ### 3. Edge Functions (요약 버튼·Readwise 전송)
 터미널에서 (Supabase CLI 설치: `npm i -g supabase`):
@@ -144,8 +152,22 @@ update public.profiles set is_admin = true, status = 'approved' where email = '�
 `supabase/migration_003_notion.sql`도 실행하고 `notion-export` 함수를 배포하세요.
 `supabase/migration_002_bilingual.sql`을 SQL Editor에서 실행하고, Edge Function을 다시 배포(`supabase functions deploy summarize readwise-export`)한 뒤 push하세요. 기존 한글 요약만 있는 논문에 영어를 채우려면 migration 파일 끝의 주석 SQL을 실행하면 다음 수집 때 다시 요약됩니다.
 
+## 비밀번호를 잊었을 때
+**본인(멤버 모두)** — 로그인 화면의 "비밀번호를 잊으셨나요?" → 이메일 입력 → 받은 메일의 링크를 누르면 새 비밀번호 설정 화면이 뜹니다. 링크는 1시간 정도만 유효합니다. Google로 가입한 계정은 비밀번호가 없으니 Google 버튼으로 들어가면 됩니다.
+
+**관리자 계정을 아예 못 여는 경우** — 사이트 밖에서 되돌릴 수 있는 길이 두 가지 있습니다.
+1. Supabase 대시보드 → Authentication → Users → 해당 사용자 오른쪽 ··· → **Reset password**(재설정 메일 발송) 또는 **Send magic link**(비밀번호 없이 로그인).
+2. 그 이메일 자체를 못 쓰는 상황이면, 다른 계정으로 가입한 뒤 SQL Editor에서 관리자로 올리면 됩니다:
+   ```sql
+   update public.profiles set is_admin = true, status = 'approved' where email = '새이메일';
+   ```
+Supabase 대시보드 로그인(GitHub 계정)만 살아 있으면 언제든 복구할 수 있으므로, 그 계정의 2단계 인증을 켜 두는 편이 안전합니다.
+
+**메일이 안 올 때** — Supabase 무료 플랜의 기본 발송은 시간당 통수 제한이 있고 스팸함으로 가기 쉽습니다. 스팸함을 먼저 확인하고, 자주 쓸 것 같으면 Authentication → Emails에서 SMTP(예: Resend)를 연결하세요.
+
 ## 문제 해결
+- **관리자 탭이 비어 있음**: `supabase/migration_008_admin.sql`을 실행하지 않은 것. 실행하면 화면 위에 뜨던 노란 안내가 사라집니다.
 - **가입했는데 "승인 대기 중"만 보임**: 관리자 계정으로 설정 → 사용자 승인. 본인이 첫 가입자인데도 그렇다면 SQL Editor에서 `update public.profiles set is_admin = true, status = 'approved' where email = '본인이메일';`
-- **Google 로그인 후 빈 화면/에러**: Supabase URL Configuration의 Redirect URLs에 배포 주소가 없는 경우.
+- **로그인 후 빈 화면/에러**: Supabase URL Configuration의 Redirect URLs에 배포 주소가 없는 경우.
 - **논문이 하나도 없음**: Actions 탭에서 "Fetch PubMed papers" 실행 기록과 로그 확인. Secrets 이름 오타가 가장 흔함.
 - **AI 요약 생성 실패**: Edge Function이 배포되지 않았거나 `ANTHROPIC_API_KEY` 시크릿 미설정.
