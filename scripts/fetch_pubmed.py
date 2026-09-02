@@ -16,10 +16,10 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CFG = json.load(open(os.path.join(ROOT, "config", "sources.json"), encoding="utf-8"))
 
 EUTILS = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils"
-SUPABASE_URL = os.environ["SUPABASE_URL"].rstrip("/")
-SERVICE_KEY = os.environ["SUPABASE_SERVICE_ROLE_KEY"]
-ANTHROPIC_KEY = os.environ.get("ANTHROPIC_API_KEY")
-NCBI_KEY = os.environ.get("NCBI_API_KEY")
+SUPABASE_URL = os.environ["SUPABASE_URL"].strip().rstrip("/")
+SERVICE_KEY = os.environ["SUPABASE_SERVICE_ROLE_KEY"].strip()
+ANTHROPIC_KEY = (os.environ.get("ANTHROPIC_API_KEY") or "").strip() or None
+NCBI_KEY = (os.environ.get("NCBI_API_KEY") or "").strip() or None
 LOOKBACK = int(os.environ.get("LOOKBACK_DAYS", CFG.get("lookback_days", 3)))
 SLEEP = 0.12 if NCBI_KEY else 0.35  # NCBI 한도: 키 없으면 3 req/s
 
@@ -224,6 +224,7 @@ def main():
         ids = [i for i in ids if i not in seen]
         seen.update(ids)
         if not ids:
+            print(f"{j['name']}: 0  (0건이 계속되면 저널명이 PubMed 표기와 다른지 확인)")
             continue
         for p in fetch_details(ids):
             if not p["abstract"] and "Editorial" in p["pub_types"]:
