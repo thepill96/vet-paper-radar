@@ -1,0 +1,27 @@
+name: Fetch PubMed papers
+
+on:
+  schedule:
+    - cron: "0 22 * * *"   # 매일 22:00 UTC = 07:00 KST
+  workflow_dispatch:
+    inputs:
+      lookback_days:
+        description: "최근 며칠치를 수집할지 (첫 실행 시 30 정도 권장)"
+        default: "3"
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r scripts/requirements.txt
+      - run: python scripts/fetch_pubmed.py
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          NCBI_API_KEY: ${{ secrets.NCBI_API_KEY }}
+          LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}

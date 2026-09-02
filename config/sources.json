@@ -1,0 +1,74 @@
+{
+  "_readme": "PubMed 수집 설정. 언어 제한 없음(영어·한국어·일본어·독일어 등 모두 수집, 요약은 항상 한/영 두 버전 생성). 비영어권 저널을 더 넣으려면 journals에 추가하면 됨. journals: 저널명은 PubMed [Journal] 필드에 그대로 쓰이는 정식 명칭(또는 NLM 약어). must_match: 인의 저널처럼 양이 많은 곳은 여기 키워드 중 하나 이상이 제목/초록에 있어야 수집됨(비우면 전부 수집). categories: 제목+초록에 키워드가 하나라도 있으면 해당 분야 태그. lookback_days: 매 실행 시 최근 며칠치를 볼지. max_ai_summaries_per_run: 실행당 Claude 요약 생성 상한(비용 통제).",
+
+  "lookback_days": 3,
+  "max_ai_summaries_per_run": 40,
+  "summary_model": "claude-sonnet-4-6",
+
+  "journals": [
+    { "name": "Veterinary Surgery", "species": "vet", "group": "외과" },
+    { "name": "Vet Comp Orthop Traumatol", "species": "vet", "group": "외과" },
+    { "name": "Journal of Small Animal Practice", "species": "vet", "group": "소동물 일반" },
+    { "name": "Journal of the American Veterinary Medical Association", "species": "vet", "group": "소동물 일반" },
+    { "name": "American Journal of Veterinary Research", "species": "vet", "group": "소동물 일반" },
+    { "name": "Journal of Veterinary Internal Medicine", "species": "vet", "group": "내과" },
+    { "name": "Journal of Feline Medicine and Surgery", "species": "vet", "group": "소동물 일반" },
+    { "name": "Veterinary Radiology & Ultrasound", "species": "vet", "group": "영상" },
+    { "name": "Veterinary Anaesthesia and Analgesia", "species": "vet", "group": "마취" },
+    { "name": "Journal of Veterinary Emergency and Critical Care", "species": "vet", "group": "응급" },
+    { "name": "Veterinary and Comparative Oncology", "species": "vet", "group": "종양" },
+    { "name": "Frontiers in Veterinary Science", "species": "vet", "group": "소동물 일반",
+      "must_match": ["dog", "dogs", "canine", "cat", "cats", "feline", "small animal"] },
+    { "name": "BMC Veterinary Research", "species": "vet", "group": "소동물 일반",
+      "must_match": ["dog", "dogs", "canine", "cat", "cats", "feline", "small animal"] },
+    { "name": "Journal of Veterinary Science", "species": "vet", "group": "소동물 일반" },
+    { "name": "Open Veterinary Journal", "species": "vet", "group": "소동물 일반" },
+    { "name": "Veterinary Sciences", "species": "vet", "group": "소동물 일반",
+      "must_match": ["dog", "dogs", "canine", "cat", "cats", "feline", "small animal"] },
+    { "name": "Tierarztliche Praxis. Ausgabe K, Kleintiere/Heimtiere", "species": "vet", "group": "비영어권 수의" },
+    { "name": "Schweizer Archiv fur Tierheilkunde", "species": "vet", "group": "비영어권 수의",
+      "must_match": ["dog", "dogs", "canine", "cat", "cats", "feline", "Hund", "Katze"] },
+    { "name": "Journal of Veterinary Medical Science", "species": "vet", "group": "비영어권 수의",
+      "must_match": ["dog", "dogs", "canine", "cat", "cats", "feline"] },
+    { "name": "Korean Journal of Veterinary Research", "species": "vet", "group": "비영어권 수의" },
+
+    { "name": "Journal of Bone and Joint Surgery. American Volume", "species": "human", "group": "인의 정형" },
+    { "name": "The Bone & Joint Journal", "species": "human", "group": "인의 정형" },
+    { "name": "Clinical Orthopaedics and Related Research", "species": "human", "group": "인의 정형" },
+    { "name": "Journal of Orthopaedic Research", "species": "human", "group": "인의 정형" },
+    { "name": "Journal of Orthopaedic Trauma", "species": "human", "group": "인의 정형" },
+    { "name": "Injury", "species": "human", "group": "인의 정형" },
+    { "name": "Journal of Neurosurgery. Spine", "species": "human", "group": "인의 신경" },
+    { "name": "Spine", "species": "human", "group": "인의 신경" },
+    { "name": "Neurosurgery", "species": "human", "group": "인의 신경" },
+    { "name": "Annals of Surgery", "species": "human", "group": "인의 일반외과" },
+    { "name": "JAMA Surgery", "species": "human", "group": "인의 일반외과" },
+    { "name": "British Journal of Surgery", "species": "human", "group": "인의 일반외과" },
+    { "name": "Journal of Biomechanics", "species": "human", "group": "생체역학",
+      "must_match": ["bone", "fracture", "implant", "plate", "screw", "osteotomy", "joint", "cartilage", "tendon", "ligament", "finite element", "spine", "vertebra"] },
+    { "name": "Clinical Biomechanics", "species": "human", "group": "생체역학" }
+  ],
+
+  "categories": {
+    "정형외과": ["fracture", "osteotomy", "arthroplasty", "TPLO", "TTA", "cruciate", "CCL", "patellar", "luxation", "hip", "elbow", "stifle", "carpus", "tarsus", "bone plate", "locking plate", "interlocking nail", "external fixat", "ESF", "CESF", "angular limb", "deformity", "CORA", "osteoarthritis", "cartilage", "arthroscop", "malunion", "nonunion", "osteosarcoma"],
+    "신경외과": ["spinal", "spine", "vertebra", "intervertebral", "IVDD", "IVDE", "disc herniation", "hemilaminectomy", "ventral slot", "myelopathy", "atlantoaxial", "brain", "intracranial", "craniotomy", "seizure", "MRI", "nerve"],
+    "연부조직외과": ["hepat", "liver lobe", "portosystemic", "shunt", "gastrointestinal", "gastropexy", "splenectomy", "adrenalectomy", "thoracotomy", "thoracoscop", "laparoscop", "urethr", "cystotomy", "nephrectomy", "ureter", "hernia", "wound", "skin flap", "reconstruct", "oncologic surgery", "mass excision", "anal sac", "perineal"],
+    "생체역학·임플란트": ["biomechanic", "finite element", "FEA", "stiffness", "load to failure", "cyclic", "fatigue", "3D print", "three-dimensional print", "patient-specific", "custom implant", "titanium", "PEEK", "CAD", "additive manufactur"],
+    "영상·수술계획": ["computed tomography", "CT", "radiograph", "ultrasound", "3D reconstruction", "surgical planning", "virtual planning", "navigation"],
+    "마취·통증": ["anesthes", "anaesthes", "analges", "nerve block", "epidural", "opioid", "sedation"],
+    "종양": ["tumor", "tumour", "neoplas", "carcinoma", "sarcoma", "lymphoma", "chemotherap", "radiation therapy", "oncolog", "metasta"],
+    "내과": ["endocrin", "cardiol", "nephrol", "renal", "gastroenterol", "dermatol", "immune-mediated", "diabet", "hyperadrenocortic", "hypothyroid"],
+    "합병증·예후": ["complication", "outcome", "prognos", "surgical site infection", "SSI", "survival", "recurrence", "revision"]
+  },
+
+  "category_fallback": "기타",
+
+  "study_type_hints": {
+    "무작위 대조": ["randomized", "randomised"],
+    "체계적 문헌고찰·메타분석": ["systematic review", "meta-analysis"],
+    "전향적": ["prospective"],
+    "후향적": ["retrospective"],
+    "사체·실험": ["cadaver", "ex vivo", "in vitro", "biomechanical"],
+    "증례": ["case report", "case series"]
+  }
+}
