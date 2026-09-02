@@ -5,9 +5,20 @@ export const LANGS = [
 ];
 
 const en = {
+  admin: { title: "Admin", lead: "Everything only administrators can see: approvals, member activity, announcements, feedback replies and summary costs.",
+    papers: "Papers", papers7d: "Added this week", summarized: "Summarised", membersCount: "Members", pending: "Pending", comments: "Comments", feedbackNew: "New feedback",
+    members: "Member activity", membersHint: "Counts since each member joined. Last active is the most recent open, mark, comment or search.",
+    member: "Member", opened: "Opened", read: "Read", bookmarks: "Bookmarks", notes: "Notes", commentsCol: "Comments", searches: "Searches", lastActive: "Last active",
+    announcements: "Announcements", announcementsHint: "Shown as a banner to all members until deactivated. Each member can dismiss it for themselves.", announcementPlaceholder: "e.g. Journal club Friday 5pm — bring one paper from this week", info: "Notice", warning: "Important", publish: "Publish", deactivate: "Deactivate", activate: "Activate", inactive: "inactive",
+    feedback: "Feedback inbox", feedbackHint: "Set a status and optionally write a reply. Members who signed their feedback see the reply on their Feedback page.", noFeedback: "No feedback yet.", anonymous: "anonymous",
+    status_new: "New", status_planned: "Planned", status_done: "Done", status_declined: "Declined", replyPlaceholder: "Write a reply…", reply: "Save reply", replyVisible: "The sender will see this reply.", replyAnon: "Anonymous feedback — the reply is only visible here.",
+    usage: "AI summary usage", usageHint: "Every summary generated automatically or from the reader is logged with its token counts. Cost is an estimate at ${i}/M input and ${o}/M output tokens.",
+    thisMonth: "Summaries this month", thisMonthCost: "Est. cost this month", allTime: "Summaries all time", allTimeCost: "Est. cost all time", month: "Month", source: "Source", count: "Summaries", tokens: "Tokens in / out", estCost: "Est. cost", src_auto: "Automatic", src_manual: "On demand" },
+  banner: { dismiss: "Dismiss" },
+  feedbackMine: { title: "Your feedback", reply: "Reply" },
   comments: { title: "Discussion", empty: "No comments yet. Start the discussion with your colleagues.", placeholder: "Share a thought with the team…", hint: "⌘/Ctrl + Enter to post", post: "Post", edit: "Edit", delete: "Delete", save: "Save", cancel: "Cancel", edited: "edited", confirmDelete: "Delete this comment?", you: "You", member: "Member" },
   tagline: "Daily curated veterinary and human clinical literature",
-  nav: { feed: "Papers", recs: "For you", bookmarks: "Bookmarks", history: "History", about: "How it works", feedback: "Feedback", settings: "Settings" },
+  nav: { feed: "Papers", recs: "For you", bookmarks: "Bookmarks", history: "History", about: "How it works", feedback: "Feedback", settings: "Settings", admin: "Admin" },
   search: "Search titles, abstracts, summaries…",
   view: { label: "Group by", category: "Field", journal: "Journal", latest: "Newest" },
   filter: { species: "Domain", vet: "Veterinary", human: "Human", period: "Added within", all: "All time", days: "{n}d",
@@ -65,9 +76,20 @@ const en = {
 };
 
 const ko = {
+  admin: { title: "관리자", lead: "관리자만 볼 수 있는 것들: 가입 승인, 회원 활동, 공지, 피드백 답장, 요약 비용.",
+    papers: "논문", papers7d: "이번 주 추가", summarized: "요약 완료", membersCount: "회원", pending: "승인 대기", comments: "댓글", feedbackNew: "새 피드백",
+    members: "회원 활동", membersHint: "각 회원의 가입 이후 누적치. 마지막 활동은 열람·표시·댓글·검색 중 가장 최근 시각.",
+    member: "회원", opened: "열람", read: "읽음", bookmarks: "북마크", notes: "메모", commentsCol: "댓글", searches: "검색", lastActive: "마지막 활동",
+    announcements: "공지", announcementsHint: "비활성화할 때까지 모든 회원에게 배너로 보입니다. 회원 각자 닫을 수 있습니다.", announcementPlaceholder: "예: 금요일 5시 저널클럽 — 이번 주 논문 한 편씩 준비", info: "안내", warning: "중요", publish: "게시", deactivate: "내리기", activate: "다시 올리기", inactive: "내려짐",
+    feedback: "피드백 함", feedbackHint: "상태를 정하고 필요하면 답장을 씁니다. 익명이 아닌 피드백은 보낸 사람이 자기 피드백 페이지에서 답장을 봅니다.", noFeedback: "아직 피드백이 없습니다.", anonymous: "익명",
+    status_new: "새 글", status_planned: "예정", status_done: "완료", status_declined: "보류", replyPlaceholder: "답장 쓰기…", reply: "답장 저장", replyVisible: "보낸 사람에게 이 답장이 보입니다.", replyAnon: "익명 피드백 — 답장은 여기서만 보입니다.",
+    usage: "AI 요약 사용량", usageHint: "자동·수동으로 만든 모든 요약의 토큰 수가 기록됩니다. 비용은 입력 ${i}/M, 출력 ${o}/M 토큰 기준 추정치입니다.",
+    thisMonth: "이번 달 요약", thisMonthCost: "이번 달 추정 비용", allTime: "전체 요약", allTimeCost: "전체 추정 비용", month: "월", source: "구분", count: "요약 수", tokens: "토큰 입력 / 출력", estCost: "추정 비용", src_auto: "자동", src_manual: "수동" },
+  banner: { dismiss: "닫기" },
+  feedbackMine: { title: "내가 보낸 피드백", reply: "답장" },
   comments: { title: "토론", empty: "아직 댓글이 없습니다. 동료들과 이야기를 시작해 보세요.", placeholder: "팀과 나눌 생각을 적어 주세요…", hint: "⌘/Ctrl + Enter로 등록", post: "등록", edit: "수정", delete: "삭제", save: "저장", cancel: "취소", edited: "수정됨", confirmDelete: "이 댓글을 삭제할까요?", you: "나", member: "멤버" },
   tagline: "수의·인의 임상 논문을 매일 아침 큐레이션",
-  nav: { feed: "논문", recs: "추천", bookmarks: "북마크", history: "히스토리", about: "작동 방식", feedback: "피드백", settings: "설정" },
+  nav: { feed: "논문", recs: "추천", bookmarks: "북마크", history: "히스토리", about: "작동 방식", feedback: "피드백", settings: "설정", admin: "관리자" },
   search: "제목·초록·요약 검색…",
   view: { label: "묶어 보기", category: "분야", journal: "저널", latest: "최신순" },
   filter: { species: "대상", vet: "수의", human: "인의", period: "수집 기간", all: "전체", days: "{n}일",

@@ -9,6 +9,7 @@ import PaperDetail from "./components/PaperDetail";
 import Settings from "./components/Settings";
 import About from "./components/About";
 import Feedback from "./components/Feedback";
+import Admin from "./components/Admin";
 
 const PAGE = 60;
 const DEFAULT_FILTERS = { species: null, categories: [], journal: null, state: null, period: 30 };
@@ -42,6 +43,8 @@ function Shell() {
   const [toast, setToast] = useState(null);
   const [pendingCount, setPendingCount] = useState(0);
   const [names, setNames] = useState({});
+  const [banners, setBanners] = useState([]);
+  const [dismissed, setDismissed] = useState(() => JSON.parse(localStorage.getItem("dismissed_ann") || "[]"));
   const [commentCounts, setCommentCounts] = useState({});
   const lastViewed = useRef(null);
 
@@ -66,6 +69,7 @@ function Shell() {
     if (!user || !approved) return;
     supabase.from("user_papers").select("paper_id,is_read,is_bookmarked,note").then(({ data }) => setStates(Object.fromEntries((data || []).map((r) => [r.paper_id, r]))));
     supabase.rpc("filter_facets").then(({ data }) => data && setFacets(data));
+    supabase.from("announcements").select("id,body,level").eq("active", true).order("created_at", { ascending: false }).then(({ data }) => setBanners(data || []));
     supabase.rpc("member_names").then(({ data }) => data && setNames(Object.fromEntries(data.map((r) => [r.id, r.display_name]))));
     if (me?.is_admin) supabase.from("profiles").select("id", { count: "exact", head: true }).eq("status", "pending").then(({ count }) => setPendingCount(count || 0));
   }, [user?.id, approved]); // eslint-disable-line
@@ -179,12 +183,12 @@ function Shell() {
   const summaryDefault = me?.summary_lang || (lang === "ko" ? "ko" : "en");
 
   return (
-    <div className="app">
+    <div className={`app ${banners.some((b) => !dismissed.includes(b.id)) ? "has-banner" : ""}`}>
       <header className="appbar">
         <button className="btn small ghost mobile-only" onClick={() => setRailOpen(true)} aria-label="Filters">☰</button>
         <div className="logo"><span className="logo-mark" />Vet Stacks</div>
         <nav className="nav">
-          {NAV.map((k) => <button key={k} className={view === k ? "on" : ""} onClick={() => { setView(k); setSelected(null); }}>{t(`nav.${k}`)}{k === "settings" && pendingCount > 0 && <span className="badge">{pendingCount}</span>}</button>)}
+          {[...NAV, ...(me?.is_admin ? ["admin"] : [])].map((k) => <button key={k} className={view === k ? "on" : ""} onClick={() => { setView(k); setSelected(null); }}>{t(`nav.${k}`)}{k === "admin" && pendingCount > 0 && <span className="badge">{pendingCount}</span>}</button>)}
         </nav>
         <span className="grow" />
         {view === "feed" && (
@@ -200,6 +204,12 @@ function Shell() {
         <span className="who">{displayName}</span>
       </header>
 
+      {banners.filter((b) => !dismissed.includes(b.id)).slice(0, 1).map((b) => (
+        <div key={b.id} className={`banner ${b.level}`}>
+          <span>{b.body}</span>
+          <button className="btn small ghost" onClick={() => { const d = [...dismissed, b.id]; setDismissed(d); localStorage.setItem("dismissed_ann", JSON.stringify(d)); }}>{t("banner.dismiss")}</button>
+        </div>
+      ))}
       {listView ? (
         <div className={`body ${selected ? "reading" : ""} ${view !== "feed" ? "no-rail" : ""}`}>
           {view === "feed" && <FilterRail group={group} setGroup={setGroup} facets={facets} filters={filters} setFilters={setFilters} open={railOpen} onClose={() => setRailOpen(false)} />}

@@ -12,29 +12,16 @@ export default function Settings({ user, me, onSignOut, onProfileChange }) {
   const [msg, setMsg] = useState(null);
   const [notionMsg, setNotionMsg] = useState(null);
   const [busy, setBusy] = useState(false);
-  const [users, setUsers] = useState([]);
-  const [feedback, setFeedback] = useState([]);
 
   useEffect(() => {
     supabase.from("profiles").select("*").eq("id", user.id).single().then(({ data }) => data && setProfile({ ...EMPTY, ...strip(data), ui_lang: data.ui_lang || lang }));
-    if (me?.is_admin) loadAdmin();
   }, [user.id, me?.is_admin]);
 
-  async function loadAdmin() {
-    const { data: u } = await supabase.from("profiles").select("id,email,display_name,status,is_admin,created_at").order("created_at", { ascending: false });
-    setUsers(u || []);
-    const { data: f } = await supabase.from("feedback").select("*").order("created_at", { ascending: false }).limit(50);
-    setFeedback(f || []);
-  }
   async function save() {
     setMsg(null);
     const { error } = await supabase.from("profiles").update(profile).eq("id", user.id);
     setMsg(error ? { err: true, text: error.message } : { text: t("settings.saved") });
     if (!error) { onProfileChange?.(profile); setLang(profile.ui_lang); }
-  }
-  async function patchUser(id, patch) {
-    const { error } = await supabase.from("profiles").update(patch).eq("id", id);
-    if (error) setMsg({ err: true, text: error.message }); else loadAdmin();
   }
   function addKw() {
     const k = kwInput.trim();
@@ -52,43 +39,12 @@ export default function Settings({ user, me, onSignOut, onProfileChange }) {
     } catch (e) { setNotionMsg({ err: true, text: e.message }); } finally { setBusy(false); }
   }
 
-  const pending = users.filter((u) => u.status === "pending");
-  const others = users.filter((u) => u.status !== "pending");
   const Chip = ({ on, onClick, children }) => <button type="button" className={`chip ${on ? "on" : ""}`} onClick={onClick}>{children}</button>;
 
   return (
     <div className="page">
       <h1>{t("settings.title")}</h1>
       <p className="lead">{user.email}{me?.is_admin && ` · ${t("settings.admin")}`}</p>
-
-      {me?.is_admin && (
-        <section className="admin">
-          <h2>{t("settings.approvals")} {pending.length > 0 && <span className="badge">{pending.length}</span>}</h2>
-          <p>{t("settings.approvalsHint")}</p>
-          {pending.length === 0 && <div className="muted">{t("settings.noPending")}</div>}
-          {pending.map((u) => (
-            <div key={u.id} className="user-row">
-              <div><b>{u.email}</b><div className="muted">{u.display_name} · {new Date(u.created_at).toLocaleDateString()}</div></div>
-              <button className="btn small primary" onClick={() => patchUser(u.id, { status: "approved" })}>{t("settings.approve")}</button>
-              <button className="btn small" onClick={() => patchUser(u.id, { status: "blocked" })}>{t("settings.block")}</button>
-            </div>
-          ))}
-          {others.length > 0 && <details><summary className="muted">{t("settings.allUsers", { n: others.length })}</summary>
-            {others.map((u) => (
-              <div key={u.id} className="user-row">
-                <div><b>{u.email}</b><div className="muted">{u.status === "approved" ? t("settings.approved") : t("settings.blocked")}{u.is_admin && ` · ${t("settings.admin")}`}</div></div>
-                {u.id !== user.id && <>
-                  <button className="btn small" onClick={() => patchUser(u.id, { status: u.status === "approved" ? "blocked" : "approved" })}>{u.status === "approved" ? t("settings.block") : t("settings.approve")}</button>
-                  <button className="btn small" onClick={() => patchUser(u.id, { is_admin: !u.is_admin })}>{u.is_admin ? t("settings.removeAdmin") : t("settings.makeAdmin")}</button>
-                </>}
-              </div>
-            ))}
-          </details>}
-          {feedback.length > 0 && <details><summary className="muted">{t("settings.feedbackInbox", { n: feedback.length })}</summary>
-            {feedback.map((f) => <div key={f.id} className="user-row" style={{ alignItems: "flex-start" }}><div><div className="muted">{f.kind} · {new Date(f.created_at).toLocaleDateString()}{f.contact && ` · ${f.contact}`}</div><div style={{ whiteSpace: "pre-wrap" }}>{f.message}</div></div></div>)}
-          </details>}
-        </section>
-      )}
 
       <section>
         <h2>{t("settings.language")}</h2>

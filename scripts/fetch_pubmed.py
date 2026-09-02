@@ -222,7 +222,9 @@ def summarize(paper):
     m = re.search(r"\{[\s\S]*\}", text)
     if not m:
         raise RuntimeError("JSON 없음")
-    return json.loads(m.group(0))
+    out = json.loads(m.group(0))
+    out["_usage"] = j.get("usage", {})
+    return out
 
 
 # ---------- main ----------
@@ -256,13 +258,13 @@ def main():
         print("ANTHROPIC_API_KEY 없음 — 요약 건너뜀")
         return
     limit = int(os.environ.get("MAX_SUMMARIES") or CFG.get("max_ai_summaries_per_run", 40))
-    pending = sb_get("papers", {"select": "pmid,title,journal,pub_date,abstract,language",
+    pending = sb_get("papers", {"select": "id,pmid,title,journal,pub_date,abstract,language",
                                 "summarized_at": "is.null", "abstract": "neq.",
                                 "order": "created_at.desc", "limit": limit})
     done = 0
     for p in pending:
         try:
-            s = summarize(p)
+            s, usage = summarize(p)
             patch_paper(p["pmid"], {
                 "summary_ko": s.get("summary_ko"),
                 "clinical_points": s.get("clinical_points_ko") or [],
@@ -275,6 +277,14 @@ def main():
                 "study_type": s.get("study_type"),
                 "summarized_at": dt.datetime.utcnow().isoformat() + "Z",
             })
+            u = s.get("_usage", {})
+            requests.post(f"{SUPABASE_URL}/rest/v1/summary_log", headers=dict(SB_HEADERS, Prefer="return=minimal"),
+                          data=json.dumps({"paper_id": p["id"], "source": "auto", "model": CFG.get("summary_model", "claude-sonnet-4-6"),
+                                           "input_tokens": u.get("input_tokens", 0), "output_tokens": u.get("output_tokens", 0)}), timeout=30)
+            requests.post(f"{SUPABASE_URL}/rest/v1/summary_usage", headers=dict(SB_HEADERS, Prefer="return=minimal"),
+                          data=json.dumps({"paper_id": p.get("id"), "source": "auto",
+                                           "input_tokens": usage.get("input_tokens", 0),
+                                           "output_tokens": usage.get("output_tokens", 0)}), timeout=30)
             done += 1
         except Exception as e:
             print(f"[summary fail] {p['pmid']}: {e}", file=sys.stderr)

@@ -63,6 +63,10 @@ Deno.serve(async (req) => {
       study_type: s.study_type, summarized_at: new Date().toISOString(),
     };
     await admin.from("papers").update(patch).eq("id", paper_id);
+    await admin.from("summary_usage").insert({ user_id: user.id, paper_id, source: "manual",
+      input_tokens: j.usage?.input_tokens ?? 0, output_tokens: j.usage?.output_tokens ?? 0 });
+    await admin.from("summary_log").insert({ paper_id, user_id: user.id, source: "manual", model: "claude-sonnet-4-6",
+      input_tokens: j.usage?.input_tokens ?? 0, output_tokens: j.usage?.output_tokens ?? 0 });
     return new Response(JSON.stringify(patch), { headers: { ...cors, "content-type": "application/json" } });
   } catch (e) {
     return new Response(JSON.stringify({ error: String(e) }), { status: 500, headers: cors });

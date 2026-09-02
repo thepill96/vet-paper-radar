@@ -38,7 +38,8 @@ $$;
 create or replace function public.protect_profile_columns()
 returns trigger language plpgsql as $$
 begin
-  if not public.is_admin() then
+  -- 대시보드·서버(service role)에서는 auth.uid()가 없으므로 통과
+  if auth.uid() is not null and not public.is_admin() then
     new.status := old.status;
     new.is_admin := old.is_admin;
   end if;
