@@ -33,7 +33,7 @@ SB_HEADERS = {
 
 # ---------- PubMed ----------
 def eutils(endpoint, params):
-    params = dict(params, tool="vet-paper-radar", email="radar@example.com")
+    params = dict(params, tool="vet-stacks", email="radar@example.com")
     if NCBI_KEY:
         params["api_key"] = NCBI_KEY
     for attempt in range(4):
@@ -207,7 +207,7 @@ SUMMARY_PROMPT = """당신은 소동물 외과 전문의를 위한 논문 큐레
 def summarize(paper):
     body = {
         "model": CFG.get("summary_model", "claude-sonnet-4-6"),
-        "max_tokens": 1600,
+        "max_tokens": 4000,
         "messages": [{"role": "user", "content": SUMMARY_PROMPT.format(**paper)}],
     }
     r = requests.post("https://api.anthropic.com/v1/messages",
@@ -215,9 +215,14 @@ def summarize(paper):
                                "content-type": "application/json"},
                       data=json.dumps(body), timeout=120)
     r.raise_for_status()
-    text = "".join(b.get("text", "") for b in r.json()["content"])
-    text = re.sub(r"^```(json)?|```$", "", text.strip(), flags=re.M).strip()
-    return json.loads(text)
+    j = r.json()
+    if j.get("stop_reason") == "max_tokens":
+        raise RuntimeError("요약 응답이 잘림 (max_tokens)")
+    text = "".join(b.get("text", "") for b in j["content"])
+    m = re.search(r"\{[\s\S]*\}", text)
+    if not m:
+        raise RuntimeError("JSON 없음")
+    return json.loads(m.group(0))
 
 
 # ---------- main ----------

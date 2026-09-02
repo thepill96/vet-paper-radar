@@ -36,6 +36,9 @@ Deno.serve(async (req) => {
     const { data: { user } } = await userClient.auth.getUser();
     if (!user) return new Response(JSON.stringify({ error: "로그인이 필요합니다" }), { status: 401, headers: cors });
 
+    const { data: prof } = await userClient.from("profiles").select("status").eq("id", user.id).single();
+    if (prof?.status !== "approved") return new Response(JSON.stringify({ error: "운영자 승인 후 사용할 수 있습니다" }), { status: 403, headers: cors });
+
     const { paper_id } = await req.json();
     const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
     const { data: p, error } = await admin.from("papers").select("id,title,journal,pub_date,abstract,language").eq("id", paper_id).single();
@@ -45,12 +48,15 @@ Deno.serve(async (req) => {
     const r = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: { "x-api-key": Deno.env.get("ANTHROPIC_API_KEY")!, "anthropic-version": "2023-06-01", "content-type": "application/json" },
-      body: JSON.stringify({ model: "claude-sonnet-4-6", max_tokens: 1600, messages: [{ role: "user", content: PROMPT(p) }] }),
+      body: JSON.stringify({ model: "claude-sonnet-4-6", max_tokens: 4000, messages: [{ role: "user", content: PROMPT(p) }] }),
     });
     const j = await r.json();
     if (!r.ok) return new Response(JSON.stringify({ error: j.error?.message ?? "Claude 호출 실패" }), { status: 502, headers: cors });
-    const text = (j.content ?? []).map((b: { text?: string }) => b.text ?? "").join("").replace(/^```(json)?|```$/gm, "").trim();
-    const s = JSON.parse(text);
+    if (j.stop_reason === "max_tokens") return new Response(JSON.stringify({ error: "요약이 너무 길어 잘렸습니다. 다시 눌러 주세요." }), { status: 502, headers: cors });
+    const raw = (j.content ?? []).map((b: { text?: string }) => b.text ?? "").join("");
+    const m = raw.match(/\{[\s\S]*\}/);
+    if (!m) return new Response(JSON.stringify({ error: "요약 형식을 읽지 못했습니다. 다시 눌러 주세요." }), { status: 502, headers: cors });
+    const s = JSON.parse(m[0]);
     const patch = {
       summary_ko: s.summary_ko, clinical_points: s.clinical_points_ko ?? [], evidence_level: s.evidence_level_ko, relevance_note: s.relevance_ko || null,
       summary_en: s.summary_en, clinical_points_en: s.clinical_points_en ?? [], evidence_level_en: s.evidence_level_en, relevance_note_en: s.relevance_en || null,

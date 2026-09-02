@@ -1,4 +1,8 @@
-# Vet Paper Radar
+# Vet Stacks
+
+(저장소·폴더 이름은 `vet-paper-radar` 그대로입니다. 사이트 주소도 변하지 않습니다.)
+
+> Interface languages: English (default), 한국어, 日本語, Deutsch, Español — switch from the top bar or Settings. Summaries are generated in English and Korean. Category/journal-group names in `config/sources.json` are English keys; the UI translates them (add translations in `web/src/lib/i18n.js`).
 
 수의·인의 임상 논문을 매일 아침 7시(KST) PubMed에서 언어 제한 없이 모아 분류하고, Claude가 원문 언어와 무관하게 한국어·영어 두 버전의 요약·임상 포인트를 달아 주며, 초대된 동료들과 각자 읽음·북마크·메모·히스토리를 남기는 사이트.
 
@@ -13,6 +17,7 @@ PubMed ──(GitHub Actions, 매일 07:00 KST)──▶ Supabase DB ◀──�
 |---|---|
 | `config/sources.json` | 수집할 저널·분야 키워드·수집 기간. **가장 자주 손댈 파일** |
 | `scripts/fetch_pubmed.py` | PubMed 수집 → 분류 → DB 저장 → Claude 요약 |
+| `scripts/recommend.py` | 사용자별 관심 프로필 → 새 논문 추천 → 알림 메일 (수집 직후 실행) |
 | `.github/workflows/` | 매일 수집(`fetch.yml`), 웹 배포(`deploy.yml`) |
 | `supabase/schema.sql` | DB 테이블, 초대 명단 게이트, 권한(RLS) |
 | `supabase/functions/` | 버튼 눌렀을 때 요약 생성 / Readwise 전송 / Notion DB 동기화 (API 키를 서버에 숨김) |
@@ -25,11 +30,7 @@ PubMed ──(GitHub Actions, 매일 07:00 KST)──▶ Supabase DB ◀──�
 ### 1. Supabase 프로젝트
 1. https://supabase.com → New project (리전 Northeast Asia/Seoul 권장). DB 비밀번호는 보관.
 2. 왼쪽 **SQL Editor** → `supabase/schema.sql` 내용 전체 붙여넣기 → Run.
-3. 같은 SQL Editor에서 본인 이메일을 초대 명단에 추가:
-   ```sql
-   insert into public.allowlist (email, note) values ('본인@gmail.com', '운영자');
-   ```
-   동료를 초대할 때도 이 한 줄만 실행하면 됩니다. 명단에 없는 이메일은 가입·로그인 자체가 막힙니다.
+3. 가입은 누구나 할 수 있고, **첫 가입자가 자동으로 관리자**가 됩니다. 이후 가입자는 승인 전까지 "승인 대기 중" 화면만 보이며, 관리자가 **설정 → 사용자 승인**에서 승인/차단합니다. 대기자가 있으면 매일 아침 관리자에게 메일이 갑니다.
 4. **Project Settings → API** 에서 세 값을 복사해 둡니다.
    - Project URL
    - `anon` `public` 키 (웹앱용)
@@ -63,6 +64,8 @@ supabase functions deploy notion-export
    | `SUPABASE_SERVICE_ROLE_KEY` | service_role 키 |
    | `ANTHROPIC_API_KEY` | Claude API 키 (없으면 요약 없이 수집만) |
    | `NCBI_API_KEY` | 선택. https://www.ncbi.nlm.nih.gov/account/settings/ 에서 발급하면 수집이 빨라짐 |
+   | `GMAIL_USER` | 추천 메일을 보낼 Gmail 주소 (예: 본인 Gmail) |
+   | `GMAIL_APP_PASSWORD` | 그 Gmail의 **앱 비밀번호** 16자리 (아래 "추천 알림 메일" 참고) |
 
 3. **Settings → Pages → Source**를 **GitHub Actions**로.
 4. **Actions** 탭 → "Fetch PubMed papers" → Run workflow → `lookback_days`를 `30`으로 해서 첫 수집. (이후엔 매일 자동으로 최근 3일치)
@@ -79,12 +82,25 @@ npm run dev              # http://localhost:5173
 ---
 
 ## 매일 쓰는 법
-- **논문** 탭: 왼쪽에서 수의/인의·기간·분야·저널·내 상태로 거르고, 위 검색창에 `TPLO complication`처럼 입력(제목·초록·한글 요약 전체 검색).
-- 논문을 열면 히스토리에 자동으로 쌓입니다. 읽음/북마크는 버튼으로, 메모는 입력 후 1초 뒤 자동 저장.
+- **논문** 탭: 왼쪽 "보기"에서 분야별/저널별/최신순으로 묶어 보고, 대상(수의/인의)을 고르면 그 아래 분야·저널 목록이 해당 대상 것만 남습니다. 검색창은 제목·초록·요약 전체를 찾습니다.
+- **읽음 표시**: 목록 왼쪽의 빨간 점 = 안 읽음, 초록 ✓ = 읽음. 점을 클릭하면 바로 토글되고, 논문을 열면 자동으로 읽음 처리됩니다(설정에서 끌 수 있음). 상세 화면 맨 위 상태 줄에서도 바꿀 수 있어요.
+- 상세 화면은 **요약 → 초록 → 내 메모 → 토론** 순서. 메모는 본인만 보고 1초 뒤 자동 저장, 토론(댓글)은 승인된 멤버 모두에게 보입니다. 본인 댓글은 수정·삭제 가능, 관리자는 모든 댓글 삭제 가능.
+- **구성 · 알고리즘** 페이지에 수집·분류·요약·추천 방식과 저널·키워드 전체가 표시되고, **피드백 · 의견**에서 익명 의견을 보낼 수 있습니다(관리자는 설정에서 확인).
 - 요약이 없는 논문은 **AI 요약 생성** 버튼(Edge Function 배포 후 동작). 매일 수집 시에도 실행당 `max_ai_summaries_per_run`개까지 자동 요약됩니다.
 - 요약은 항상 **한국어·영어 두 버전**이 함께 생성됩니다. 요약창 위 탭(한국어 / English / 병기)으로 바꿔 보고, **설정 → 요약 언어**에서 기본값을 정합니다. 일본어·독일어 등 비영어 논문은 원어 제목이 영어 제목 아래에 표시되고 "원문 ○○" 칩이 붙습니다.
 - **북마크**/**히스토리** 탭 상단에서 목록 전체를 Obsidian .md 한 파일 / Anki 가져오기 파일 / Readwise 하이라이트로 내보냅니다.
 - **설정**에서 Readwise 토큰(https://readwise.io/access_token)을 저장하면 Readwise 버튼이 동작합니다.
+
+## 추천 알림 메일
+매일 수집이 끝나면 `recommend.py`가 사용자마다 관심 프로필(북마크·메모 3점, 읽음 2점, 열람 1점, 검색어 2.5점, 설정에 적은 키워드 4점)을 만들고, 최근 8일 내 수집된 논문 중 분야·저널·제목 키워드가 맞는 것을 점수화해 상위 10편을 **추천** 탭에 넣습니다. 설정에서 고른 주기(매일/주 1회/끄기)에 따라 같은 목록을 이메일로 보냅니다. 메일의 논문 링크를 누르면 사이트에서 바로 그 논문이 열립니다.
+
+**Gmail로 보내기 (도메인 없이, 권장)**
+1. Google 계정 → 보안 → **2단계 인증** 켜기 (이미 켜져 있으면 생략).
+2. https://myaccount.google.com/apppasswords → 앱 이름 `vet-paper-radar` → 만들기 → 16자리 비밀번호 복사.
+3. GitHub Secrets에 `GMAIL_USER`(Gmail 주소), `GMAIL_APP_PASSWORD`(16자리, 공백 있어도 됨) 등록.
+4. 테스트: Actions → Fetch PubMed papers → Run workflow에서 `force_digest`를 `1`로 → 주기와 상관없이 지금 메일 발송. 추천이 생기려면 먼저 논문을 몇 편 열어보고 북마크나 검색을 해두어야 합니다.
+
+Gmail은 하루 500통 한도라 동료 몇 명 규모에는 충분합니다. 나중에 도메인이 생기면 `RESEND_API_KEY`와 `MAIL_FROM`을 대신 넣으면 Resend로 발송됩니다.
 
 ## Notion 연동
 논문을 Notion 데이터베이스에 열(속성)별로 정리합니다. 논문 한 편이 한 행이고, 본문에는 한/영 요약·임상 포인트·내 메모·원문 초록(토글)·출처가 들어갑니다. 같은 논문을 다시 보내면 PMID로 찾아 속성(읽음·북마크·메모)만 갱신하고 중복 행을 만들지 않습니다.
@@ -106,11 +122,15 @@ npm run dev              # http://localhost:5173
 - Claude 요약: 논문 1편당 대략 1~2원 수준(초록 길이에 따라 다름). `max_ai_summaries_per_run`으로 상한 조절.
 
 ## 이미 설치했다면 (업데이트)
+마이그레이션은 번호 순서대로 실행합니다(004 → 005 → 006 → 007). 모두 재실행해도 안전합니다. 007은 멤버 간 댓글(토론) 기능입니다.
+`supabase/migration_006_i18n.sql`을 실행하세요(기존 한글 분야명을 영어 키로 변환, ui_lang 컬럼).
+`supabase/migration_005_approval.sql`을 실행하고(가입 승인제·피드백·동적 필터), `summarize` 함수를 재배포하세요. 실행 후 마지막 줄의 주석을 본인 이메일로 바꿔 실행하면 관리자가 됩니다.
+`supabase/migration_004_digest.sql`도 실행하세요(추천·알림 메일).
 `supabase/migration_003_notion.sql`도 실행하고 `notion-export` 함수를 배포하세요.
 `supabase/migration_002_bilingual.sql`을 SQL Editor에서 실행하고, Edge Function을 다시 배포(`supabase functions deploy summarize readwise-export`)한 뒤 push하세요. 기존 한글 요약만 있는 논문에 영어를 채우려면 migration 파일 끝의 주석 SQL을 실행하면 다음 수집 때 다시 요약됩니다.
 
 ## 문제 해결
-- **"초대된 이메일이 아닙니다"**: `allowlist`에 그 이메일이 없음. 1-3 SQL 실행.
+- **가입했는데 "승인 대기 중"만 보임**: 관리자 계정으로 설정 → 사용자 승인. 본인이 첫 가입자인데도 그렇다면 SQL Editor에서 `update public.profiles set is_admin = true, status = 'approved' where email = '본인이메일';`
 - **Google 로그인 후 빈 화면/에러**: Supabase URL Configuration의 Redirect URLs에 배포 주소가 없는 경우.
 - **논문이 하나도 없음**: Actions 탭에서 "Fetch PubMed papers" 실행 기록과 로그 확인. Secrets 이름 오타가 가장 흔함.
 - **AI 요약 생성 실패**: Edge Function이 배포되지 않았거나 `ANTHROPIC_API_KEY` 시크릿 미설정.

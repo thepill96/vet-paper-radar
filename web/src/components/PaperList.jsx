@@ -1,64 +1,82 @@
+import { useMemo } from "react";
 import { downloadObsidianBundle, downloadAnki } from "../lib/export";
+import { useT, fmtDate, fmtDateTime } from "../lib/i18n";
 
-const fmtDate = (d) => (d ? d.slice(0, 10) : "");
+export default function PaperList({ papers, states, selectedId, onSelect, loading, hasMore, onMore, view, group, total, lastCollected, commentCounts = {}, onReadwise, onNotion, onToggleRead }) {
+  const { t, lang } = useT();
+  const unread = papers.filter((p) => !states[p.id]?.is_read).length;
 
-export default function PaperList({ papers, states, selectedId, onSelect, loading, hasMore, onMore, sort, setSort, view, total, onReadwise, onNotion }) {
-  const title = { feed: "논문", bookmarks: "북마크", history: "최근 본 논문" }[view];
-  const exportable = papers.length > 0;
+  const sections = useMemo(() => {
+    if (view !== "feed" || group === "latest") return [[null, papers]];
+    const m = new Map();
+    for (const p of papers) {
+      const key = group === "journal" ? (p.journal || "—") : ((p.categories || [])[0] || "Other");
+      if (!m.has(key)) m.set(key, []);
+      m.get(key).push(p);
+    }
+    return [...m.entries()].sort((a, b) => b[1].length - a[1].length);
+  }, [papers, view, group]);
+
+  const emptyTitle = { feed: "emptyFeed", recs: "emptyRecs", bookmarks: "emptyBookmarks", history: "emptyHistory" }[view];
+  const emptyHint = { feed: "emptyFeedHint", recs: "emptyRecsHint" }[view] || "emptyHint";
 
   return (
     <section className="list">
       <div className="list-head">
-        <span><span className="count">{total ?? papers.length}</span> {title}</span>
-        <span className="spacer" />
-        {view === "feed" && (
-          <select value={sort} onChange={(e) => setSort(e.target.value)} aria-label="정렬">
-            <option value="created">수집 최신순</option>
-            <option value="pub">발행일순</option>
-            <option value="title">제목순</option>
-          </select>
-        )}
-        {view !== "feed" && exportable && (
-          <>
-            <button className="btn small" onClick={() => downloadObsidianBundle(papers, states)}>Obsidian .md</button>
+        <div>
+          <div className="list-title">{t(`list.${view}`)} <span className="count">{total ?? papers.length}</span>{view === "feed" && unread > 0 && <span className="unread-count">{t("list.unread", { n: unread })}</span>}</div>
+          {lastCollected && <div className="list-sub">{t("list.updated", { t: fmtDateTime(lastCollected, lang) })}</div>}
+        </div>
+        {(view === "bookmarks" || view === "history") && papers.length > 0 && (
+          <div className="list-actions">
+            <button className="btn small" onClick={() => downloadObsidianBundle(papers, states)}>Obsidian</button>
             <button className="btn small" onClick={() => downloadAnki(papers, states)}>Anki</button>
             <button className="btn small" onClick={() => onReadwise(papers.map((p) => p.id))}>Readwise</button>
             <button className="btn small" onClick={() => onNotion(papers.map((p) => p.id))}>Notion</button>
-          </>
+          </div>
         )}
       </div>
 
-      {!loading && papers.length === 0 && (
-        <div className="empty">
-          <b>{view === "bookmarks" ? "북마크한 논문이 없습니다" : view === "history" ? "아직 본 논문이 없습니다" : "조건에 맞는 논문이 없습니다"}</b>
-          {view === "feed" ? "필터를 풀거나 기간을 넓혀 보세요. 첫 수집 전이라면 GitHub Actions에서 워크플로를 한 번 실행하세요." : "논문을 열면 여기에 쌓입니다."}
+      {!loading && papers.length === 0 && <div className="empty"><b>{t(`list.${emptyTitle}`)}</b>{t(`list.${emptyHint}`)}</div>}
+
+      {sections.map(([sec, items]) => (
+        <div key={sec ?? "_"}>
+          {sec && <div className="section-head"><span>{group === "category" ? t(`cat.${sec}`) : sec}</span><span className="n">{items.length}</span></div>}
+          {items.map((p) => {
+            const s = states[p.id] || {};
+            const read = Boolean(s.is_read);
+            return (
+              <div key={p.id} className={`item ${p.species} ${p.id === selectedId ? "on" : ""} ${read ? "read" : "unread"}`}>
+                <button className="read-toggle" title={read ? t("item.markUnread") : t("item.markRead")} aria-label={read ? t("reader.read") : t("reader.unread")} onClick={(e) => { e.stopPropagation(); onToggleRead(p.id); }}>{read ? "✓" : ""}</button>
+                <button className="item-body" onClick={() => onSelect(p)}>
+                  {p._reason && <span className="reason">{translateReason(p._reason, t)}</span>}
+                  <p className="t">{p.title}</p>
+                  <span className="m">
+                    <span className="j">{p.journal_abbrev || p.journal}</span>
+                    <span>{fmtDate(p.pub_date, lang)}</span>
+                    {group !== "category" && (p.categories || []).slice(0, 2).map((c) => <span key={c} className="cat">{t(`cat.${c}`)}</span>)}
+                    <span className="flags">
+                      {s.is_bookmarked && <span className="flag mark">★</span>}
+                      {s.note && <span className="flag">✎</span>}
+                      {commentCounts[p.id] > 0 && <span className="flag">💬 {commentCounts[p.id]}</span>}
+                      {(p.summary_ko || p.summary_en) && <span className="flag ai">AI</span>}
+                      {p.language && p.language !== "eng" && <span className="flag">{p.language}</span>}
+                    </span>
+                  </span>
+                </button>
+              </div>
+            );
+          })}
         </div>
-      )}
+      ))}
 
-      {papers.map((p) => {
-        const s = states[p.id] || {};
-        return (
-          <button key={p.id} className={`item ${p.species} ${p.id === selectedId ? "on" : ""} ${s.is_read ? "read" : ""}`} onClick={() => onSelect(p)}>
-            <span className="bar" aria-hidden="true" />
-            <span>
-              <p className="t">{p.title}</p>
-              <span className="m">
-                <span className="j">{p.journal_abbrev || p.journal}</span>
-                <span>{fmtDate(p.pub_date)}</span>
-                <span className="flags">
-                  {s.is_bookmarked && <span className="flag mark">북마크</span>}
-                  {s.note && <span className="flag">메모</span>}
-                  {(p.summary_ko || p.summary_en) && <span className="flag ai">AI {p.summary_ko && p.summary_en ? "한/EN" : p.summary_ko ? "한" : "EN"}</span>}
-                  {p.language && p.language !== "eng" && <span className="flag">{p.language}</span>}
-                </span>
-              </span>
-            </span>
-          </button>
-        );
-      })}
-
-      {loading && <div className="empty"><span className="spin" />불러오는 중</div>}
-      {!loading && hasMore && <button className="btn more" onClick={onMore}>더 보기</button>}
+      {loading && <div className="empty"><span className="spin" />{t("list.loading")}</div>}
+      {!loading && hasMore && <button className="btn more" onClick={onMore}>{t("list.more")}</button>}
     </section>
   );
+}
+
+// recommend.py가 만드는 이유 문자열: "Orthopedics · keywords: osteotomy, radial"
+function translateReason(r, t) {
+  return r.split(" · ").map((part) => (t(`cat.${part}`) !== part ? t(`cat.${part}`) : part)).join(" · ");
 }

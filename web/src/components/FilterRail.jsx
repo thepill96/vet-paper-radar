@@ -1,53 +1,76 @@
-export default function FilterRail({ facets, filters, setFilters, open, onClose }) {
-  const toggleIn = (key, value) =>
-    setFilters((f) => {
-      const set = new Set(f[key]);
-      set.has(value) ? set.delete(value) : set.add(value);
-      return { ...f, [key]: [...set] };
-    });
-  const set = (key, value) => setFilters((f) => ({ ...f, [key]: f[key] === value ? null : value }));
+import { useT } from "../lib/i18n";
+
+export default function FilterRail({ group, setGroup, facets, filters, setFilters, open, onClose }) {
+  const { t } = useT();
+  const sp = filters.species;
+  const journals = agg(facets.journals.filter((j) => !sp || j.species === sp));
+  const categories = agg(facets.categories.filter((c) => !sp || c.species === sp));
+
+  const toggleCat = (c) => setFilters((f) => ({ ...f, categories: f.categories.includes(c) ? f.categories.filter((x) => x !== c) : [...f.categories, c] }));
+  const set = (k, v) => setFilters((f) => ({ ...f, [k]: f[k] === v ? null : v }));
+  const setSpecies = (v) => setFilters((f) => {
+    const next = f.species === v ? null : v;
+    const validJ = new Set(facets.journals.filter((j) => !next || j.species === next).map((j) => j.name));
+    const validC = new Set(facets.categories.filter((c) => !next || c.species === next).map((c) => c.name));
+    return { ...f, species: next, journal: validJ.has(f.journal) ? f.journal : null, categories: f.categories.filter((c) => validC.has(c)) };
+  });
   const reset = () => setFilters({ species: null, categories: [], journal: null, state: null, period: 30 });
+  const active = (sp ? 1 : 0) + filters.categories.length + (filters.journal ? 1 : 0) + (filters.state ? 1 : 0);
 
   return (
     <aside className={`rail ${open ? "open" : ""}`}>
-      {open && <button className="btn" style={{ width: "100%", marginBottom: 12 }} onClick={onClose}>필터 닫기</button>}
-      <h3>대상</h3>
-      <div className="chips">
-        <button className={`chip vet ${filters.species === "vet" ? "on" : ""}`} onClick={() => set("species", "vet")}>수의</button>
-        <button className={`chip human ${filters.species === "human" ? "on" : ""}`} onClick={() => set("species", "human")}>인의</button>
+      {open && <button className="btn small wide" style={{ marginBottom: 12 }} onClick={onClose}>✕</button>}
+
+      <h3>{t("view.label")}</h3>
+      <div className="seg">
+        {["category", "journal", "latest"].map((k) => <button key={k} className={group === k ? "on" : ""} onClick={() => setGroup(k)}>{t(`view.${k}`)}</button>)}
       </div>
 
-      <h3>기간</h3>
+      <h3>{t("filter.species")}</h3>
+      <div className="seg">
+        <button className={`vet ${sp === "vet" ? "on" : ""}`} onClick={() => setSpecies("vet")}>{t("filter.vet")}</button>
+        <button className={`human ${sp === "human" ? "on" : ""}`} onClick={() => setSpecies("human")}>{t("filter.human")}</button>
+      </div>
+
+      <h3>{t("filter.period")}</h3>
       <div className="chips">
-        {[7, 30, 90, 365, 0].map((d) => (
-          <button key={d} className={`chip ${filters.period === d ? "on" : ""}`} onClick={() => setFilters((f) => ({ ...f, period: d }))}>
-            {d === 0 ? "전체" : `${d}일`}
+        {[7, 30, 90, 365, 0].map((d) => <button key={d} className={`chip ${filters.period === d ? "on" : ""}`} onClick={() => setFilters((f) => ({ ...f, period: d }))}>{d === 0 ? t("filter.all") : t("filter.days", { n: d })}</button>)}
+      </div>
+
+      <h3>{t("filter.state")}</h3>
+      <div className="chips">
+        {["unread", "read", "bookmarked", "noted", "ai"].map((k) => <button key={k} className={`chip ${filters.state === k ? "on" : ""}`} onClick={() => set("state", k)}>{t(`filter.${k}`)}</button>)}
+      </div>
+
+      <h3>{t("filter.categories")}{filters.categories.length > 0 && <span className="muted">{t("filter.selected", { n: filters.categories.length })}</span>}</h3>
+      <div className="facets">
+        {categories.map((c) => (
+          <button key={c.name} className={`facet ${filters.categories.includes(c.name) ? "on" : ""}`} onClick={() => toggleCat(c.name)}>
+            <span className="label">{t(`cat.${c.name}`)}</span><span className="n">{c.n}</span>
+          </button>
+        ))}
+        {!categories.length && <div className="muted" style={{ padding: "4px 8px" }}>{t("filter.afterCollect")}</div>}
+      </div>
+
+      <h3>{t("filter.journals")}</h3>
+      <div className="facets">
+        {journals.map((j) => (
+          <button key={j.name} className={`facet ${filters.journal === j.name ? "on" : ""}`} onClick={() => set("journal", j.name)}>
+            <span className={`dot ${j.species}`} /><span className="label">{j.name}</span><span className="n">{j.n}</span>
           </button>
         ))}
       </div>
 
-      <h3>내 상태</h3>
-      <div className="chips">
-        <button className={`chip ${filters.state === "unread" ? "on" : ""}`} onClick={() => set("state", "unread")}>안 읽음</button>
-        <button className={`chip ${filters.state === "read" ? "on" : ""}`} onClick={() => set("state", "read")}>읽음</button>
-        <button className={`chip ${filters.state === "noted" ? "on" : ""}`} onClick={() => set("state", "noted")}>메모 있음</button>
-        <button className={`chip ${filters.state === "ai" ? "on" : ""}`} onClick={() => set("state", "ai")}>AI 요약 있음</button>
-      </div>
-
-      <h3>분야</h3>
-      <div className="chips">
-        {facets.categories.map((c) => (
-          <button key={c} className={`chip ${filters.categories.includes(c) ? "on" : ""}`} onClick={() => toggleIn("categories", c)}>{c}</button>
-        ))}
-        {!facets.categories.length && <span style={{ color: "var(--ink-3)", fontSize: 12 }}>수집 후 표시됨</span>}
-      </div>
-
-      <h3>저널</h3>
-      {facets.journals.map((j) => (
-        <button key={j} className={`list-btn ${filters.journal === j ? "on" : ""}`} onClick={() => set("journal", j)}>{j}</button>
-      ))}
-
-      <button className="btn reset" onClick={reset}>필터 초기화</button>
+      {active > 0 && <button className="btn small wide reset" onClick={reset}>{t("filter.reset")} · {active}</button>}
     </aside>
   );
+}
+
+function agg(rows) {
+  const m = new Map();
+  for (const r of rows) {
+    const cur = m.get(r.name);
+    if (cur) { cur.n += r.n; if (cur.species !== r.species) cur.species = "both"; } else m.set(r.name, { ...r });
+  }
+  return [...m.values()].sort((a, b) => b.n - a.n);
 }

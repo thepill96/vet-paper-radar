@@ -28,7 +28,7 @@ Deno.serve(async (req) => {
 
     const highlights = (papers ?? []).flatMap((p) => {
       const base = { title: p.title, author: (p.authors ?? []).slice(0, 3).join(", "), source_url: p.url,
-                     source_type: "vet-paper-radar", category: "articles", highlighted_at: new Date().toISOString() };
+                     source_type: "vet-stacks", category: "articles", highlighted_at: new Date().toISOString() };
       const items = [];
       const meta = `${p.journal} ${p.pub_date ?? ""}`.trim();
       if (p.summary_ko) items.push({ ...base, text: p.summary_ko, note: meta });

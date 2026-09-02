@@ -42,26 +42,8 @@ create index if not exists papers_created_idx on public.papers (created_at desc)
 create index if not exists papers_cat_idx on public.papers using gin (categories);
 create index if not exists papers_title_trgm on public.papers using gin (title gin_trgm_ops);
 
--- 2. 초대 명단 (여기 있는 이메일만 가입/로그인 가능) ---------------------
-create table if not exists public.allowlist (
-  email      text primary key,
-  note       text,
-  created_at timestamptz default now()
-);
-
-create or replace function public.check_allowlist()
-returns trigger language plpgsql security definer as $$
-begin
-  if not exists (select 1 from public.allowlist where lower(email) = lower(new.email)) then
-    raise exception '초대되지 않은 이메일입니다: %', new.email;
-  end if;
-  return new;
-end $$;
-
-drop trigger if exists on_auth_user_created_check on auth.users;
-create trigger on_auth_user_created_check
-  before insert on auth.users
-  for each row execute function public.check_allowlist();
+-- 2. 가입은 누구나, 열람은 운영자 승인 후 -------------------------------
+--    (첫 가입자는 자동으로 관리자+승인. 그 뒤 가입자는 설정 → 사용자 승인에서 관리자가 승인)
 
 -- 3. 프로필 (Readwise 토큰 등 개인 설정) --------------------------------
 create table if not exists public.profiles (
@@ -72,17 +54,50 @@ create table if not exists public.profiles (
   summary_lang   text default 'ko' check (summary_lang in ('ko','en','both')),
   notion_token   text,
   notion_database_id text,
+  digest_freq    text default 'weekly' check (digest_freq in ('daily','weekly','off')),
+  digest_weekday int default 1,
+  interest_keywords text[] default '{}',
+  digest_last_sent_at timestamptz,
+  status         text default 'pending' check (status in ('pending','approved','blocked')),
+  is_admin       boolean default false,
+  auto_read      boolean default true,
+  ui_lang        text default 'en',
   created_at     timestamptz default now()
 );
 
 create or replace function public.handle_new_user()
 returns trigger language plpgsql security definer as $$
+declare first_user boolean;
 begin
-  insert into public.profiles (id, email, display_name)
-  values (new.id, new.email, coalesce(new.raw_user_meta_data->>'full_name', split_part(new.email,'@',1)))
+  select not exists (select 1 from public.profiles where is_admin) into first_user;
+  insert into public.profiles (id, email, display_name, status, is_admin)
+  values (new.id, new.email, coalesce(new.raw_user_meta_data->>'full_name', split_part(new.email,'@',1)),
+          case when first_user then 'approved' else 'pending' end, first_user)
   on conflict (id) do nothing;
   return new;
 end $$;
+
+create or replace function public.is_admin()
+returns boolean language sql stable security definer as $$
+  select coalesce((select is_admin from public.profiles where id = auth.uid()), false);
+$$;
+create or replace function public.is_approved()
+returns boolean language sql stable security definer as $$
+  select coalesce((select status = 'approved' from public.profiles where id = auth.uid()), false);
+$$;
+
+create or replace function public.protect_profile_columns()
+returns trigger language plpgsql as $$
+begin
+  if not public.is_admin() then
+    new.status := old.status;
+    new.is_admin := old.is_admin;
+  end if;
+  return new;
+end $$;
+drop trigger if exists protect_profile_columns on public.profiles;
+create trigger protect_profile_columns before update on public.profiles
+  for each row execute function public.protect_profile_columns();
 
 drop trigger if exists on_auth_user_created_profile on auth.users;
 create trigger on_auth_user_created_profile
@@ -109,18 +124,60 @@ create table if not exists public.view_history (
 );
 create index if not exists view_history_user_idx on public.view_history (user_id, viewed_at desc);
 
+-- 5b. 검색어 기록 / 추천 결과 ----------------------------------------
+create table if not exists public.search_log (
+  id         bigserial primary key,
+  user_id    uuid references auth.users(id) on delete cascade,
+  query      text not null,
+  created_at timestamptz default now()
+);
+create index if not exists search_log_user_idx on public.search_log (user_id, created_at desc);
+
+create table if not exists public.recommendations (
+  id         bigserial primary key,
+  user_id    uuid references auth.users(id) on delete cascade,
+  paper_id   uuid references public.papers(id) on delete cascade,
+  score      real,
+  reason     text,
+  created_at timestamptz default now(),
+  emailed_at timestamptz,
+  unique (user_id, paper_id)
+);
+create index if not exists recommendations_user_idx on public.recommendations (user_id, created_at desc);
+
+create table if not exists public.feedback (
+  id         bigserial primary key,
+  user_id    uuid references auth.users(id) on delete set null,
+  kind       text,
+  message    text not null,
+  contact    text,
+  created_at timestamptz default now()
+);
+
+create table if not exists public.comments (
+  id         bigserial primary key,
+  paper_id   uuid references public.papers(id) on delete cascade,
+  user_id    uuid references auth.users(id) on delete cascade,
+  body       text not null,
+  created_at timestamptz default now(),
+  updated_at timestamptz
+);
+create index if not exists comments_paper_idx on public.comments (paper_id, created_at);
+
 -- 6. RLS ---------------------------------------------------------------
 alter table public.papers       enable row level security;
-alter table public.allowlist    enable row level security;
+alter table public.feedback     enable row level security;
+alter table public.comments     enable row level security;
 alter table public.profiles     enable row level security;
 alter table public.user_papers  enable row level security;
 alter table public.view_history enable row level security;
+alter table public.search_log   enable row level security;
+alter table public.recommendations enable row level security;
 
 drop policy if exists "papers readable by members" on public.papers;
 create policy "papers readable by members" on public.papers
-  for select to authenticated using (true);
+  for select to authenticated using (public.is_approved());
 
--- allowlist는 service_role(대시보드/스크립트)만 접근. 로그인 사용자에게는 정책 없음 = 접근 불가.
 
 drop policy if exists "own profile" on public.profiles;
 create policy "own profile" on public.profiles
@@ -134,15 +191,65 @@ drop policy if exists "own history" on public.view_history;
 create policy "own history" on public.view_history
   for all to authenticated using (auth.uid() = user_id) with check (auth.uid() = user_id);
 
+drop policy if exists "own search_log" on public.search_log;
+create policy "own search_log" on public.search_log
+  for all to authenticated using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
+drop policy if exists "own recommendations" on public.recommendations;
+create policy "own recommendations" on public.recommendations
+  for select to authenticated using (auth.uid() = user_id and public.is_approved());
+
+drop policy if exists "admin reads profiles" on public.profiles;
+create policy "admin reads profiles" on public.profiles
+  for select to authenticated using (public.is_admin());
+drop policy if exists "admin updates profiles" on public.profiles;
+create policy "admin updates profiles" on public.profiles
+  for update to authenticated using (public.is_admin()) with check (public.is_admin());
+
+drop policy if exists "anyone logged in can send feedback" on public.feedback;
+create policy "anyone logged in can send feedback" on public.feedback
+  for insert to authenticated with check (user_id is null or user_id = auth.uid());
+drop policy if exists "admin reads feedback" on public.feedback;
+create policy "admin reads feedback" on public.feedback
+  for select to authenticated using (public.is_admin());
+
+drop policy if exists "approved members read comments" on public.comments;
+create policy "approved members read comments" on public.comments
+  for select to authenticated using (public.is_approved());
+drop policy if exists "approved members write own comments" on public.comments;
+create policy "approved members write own comments" on public.comments
+  for insert to authenticated with check (auth.uid() = user_id and public.is_approved());
+drop policy if exists "edit own comments" on public.comments;
+create policy "edit own comments" on public.comments
+  for update to authenticated using (auth.uid() = user_id) with check (auth.uid() = user_id);
+drop policy if exists "delete own or admin" on public.comments;
+create policy "delete own or admin" on public.comments
+  for delete to authenticated using (auth.uid() = user_id or public.is_admin());
+
+create or replace function public.member_names()
+returns table (id uuid, display_name text) language sql stable security definer as $$
+  select id, coalesce(display_name, split_part(email, '@', 1)) from public.profiles where status = 'approved';
+$$;
+grant execute on function public.member_names() to authenticated;
+
+create or replace function public.comment_counts(ids uuid[])
+returns table (paper_id uuid, n bigint) language sql stable security definer as $$
+  select paper_id, count(*) from public.comments where paper_id = any(ids) group by paper_id;
+$$;
+grant execute on function public.comment_counts(uuid[]) to authenticated;
+
 -- 7. 필터용 목록 RPC (분야·저널 distinct 값) -----------------------------
 create or replace function public.filter_facets()
 returns json language sql stable security definer as $$
   select json_build_object(
-    'journals', (select coalesce(json_agg(j order by j), '[]'::json) from (select distinct journal as j from public.papers where journal is not null) s),
-    'categories', (select coalesce(json_agg(c order by c), '[]'::json) from (select distinct unnest(categories) as c from public.papers) s)
+    'journals', (select coalesce(json_agg(json_build_object('name', journal, 'species', species, 'n', n) order by n desc), '[]'::json)
+                 from (select journal, species, count(*) n from public.papers where journal is not null group by journal, species) s),
+    'categories', (select coalesce(json_agg(json_build_object('name', c, 'species', species, 'n', n) order by n desc), '[]'::json)
+                   from (select unnest(categories) c, species, count(*) n from public.papers group by c, species) s),
+    'last_collected', (select max(created_at) from public.papers)
   );
 $$;
 grant execute on function public.filter_facets() to authenticated;
 
--- 8. 첫 초대 (본인 이메일로 바꾸세요) -----------------------------------
--- insert into public.allowlist (email, note) values ('you@example.com', '운영자');
+-- 8. 첫 가입자가 자동으로 관리자가 됩니다. 나중에 관리자를 추가하려면:
+-- update public.profiles set is_admin = true, status = 'approved' where email = 'you@example.com';

@@ -102,7 +102,7 @@ Deno.serve(async (req) => {
       if (!parent) return json({ error: "Notion 페이지 ID(또는 페이지 링크)를 입력하세요" }, 400);
       const db = await notion(prof.notion_token, "/databases", "POST", {
         parent: { type: "page_id", page_id: parent },
-        title: rt("Vet Paper Radar"),
+        title: rt("Vet Stacks"),
         properties: DB_PROPERTIES,
       });
       await sb.from("profiles").update({ notion_database_id: db.id }).eq("id", user.id);

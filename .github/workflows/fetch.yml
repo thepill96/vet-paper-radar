@@ -11,6 +11,9 @@ on:
       max_summaries:
         description: "이번 실행에서 만들 AI 요약 개수 (과거 논문 일괄 요약: 500~2000, 편당 약 2~3원)"
         default: "40"
+      force_digest:
+        description: "추천 메일 지금 바로 보내기 (테스트용, 1로 설정)"
+        default: "0"
 
 jobs:
   fetch:
@@ -30,3 +33,15 @@ jobs:
           NCBI_API_KEY: ${{ secrets.NCBI_API_KEY }}
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
           MAX_SUMMARIES: ${{ github.event.inputs.max_summaries || '40' }}
+      - name: Recommendations + digest email
+        if: always()
+        run: python scripts/recommend.py
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          SITE_URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/
+          GMAIL_USER: ${{ secrets.GMAIL_USER }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          MAIL_FROM: ${{ secrets.MAIL_FROM }}
+          DIGEST_FORCE: ${{ github.event.inputs.force_digest || '0' }}

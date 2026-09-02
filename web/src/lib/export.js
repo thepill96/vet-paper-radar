@@ -52,7 +52,7 @@ export function downloadObsidian(p, state) {
 
 export function downloadObsidianBundle(papers, states) {
   const text = papers.map((p) => paperToMarkdown(p, states[p.id])).join("\n\n---\n\n");
-  download(`vet-paper-radar-${new Date().toISOString().slice(0, 10)}.md`, text, "text/markdown");
+  download(`vet-stacks-${new Date().toISOString().slice(0, 10)}.md`, text, "text/markdown");
 }
 
 // Anki: 탭 구분, 필드 = Front / Back / Tags. 한 논문당 카드 1장 + 임상 포인트마다 cloze 없이 Q/A 1장.
