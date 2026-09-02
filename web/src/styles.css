@@ -61,7 +61,8 @@ input, textarea, select { font: inherit; color: inherit; }
 .chip { padding: 4px 10px; border-radius: 999px; border: 1px solid var(--rule); background: var(--surface); font-size: 12.5px; color: var(--ink-2); transition: all 0.12s; }
 .chip:hover { border-color: #cfd6dc; }
 .chip.on { background: var(--ink); color: #fff; border-color: var(--ink); }
-.check { display: flex; align-items: center; gap: 8px; font-size: 14px; }
+.check { display: flex; align-items: center; gap: 8px; font-size: 14px; cursor: pointer; }
+.check input[type="checkbox"], .page input[type="checkbox"] { width: 16px; height: 16px; margin: 0; flex: none; accent-color: var(--accent); }
 .spin { display: inline-block; width: 12px; height: 12px; border: 2px solid var(--rule); border-top-color: var(--ink); border-radius: 50%; animation: spin 0.8s linear infinite; vertical-align: -2px; margin-right: 6px; }
 @keyframes spin { to { transform: rotate(360deg); } }
 .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--ink); color: #fff; padding: 10px 16px; border-radius: 8px; font-size: 13px; z-index: 20; box-shadow: var(--shadow); }
