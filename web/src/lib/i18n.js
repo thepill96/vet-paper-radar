@@ -14,7 +14,7 @@ const en = {
     status_new: "New", status_planned: "Planned", status_done: "Done", status_declined: "Declined", replyPlaceholder: "Write a reply…", reply: "Save reply", replyVisible: "The sender will see this reply.", replyAnon: "Anonymous feedback — the reply is only visible here.",
     usage: "AI summary usage", usageHint: "Every summary generated automatically or from the reader is logged with its token counts. Cost is an estimate at ${i}/M input and ${o}/M output tokens.",
     thisMonth: "Summaries this month", thisMonthCost: "Est. cost this month", allTime: "Summaries all time", allTimeCost: "Est. cost all time", month: "Month", source: "Source", count: "Summaries", tokens: "Tokens in / out", estCost: "Est. cost", src_auto: "Automatic", src_manual: "On demand" },
-  banner: { dismiss: "Dismiss" },
+  banner: { title: "Announcement", dismiss: "Got it" },
   feedbackMine: { title: "Your feedback", reply: "Reply" },
   comments: { title: "Discussion", empty: "No comments yet. Start the discussion with your colleagues.", placeholder: "Share a thought with the team…", hint: "⌘/Ctrl + Enter to post", post: "Post", edit: "Edit", delete: "Delete", save: "Save", cancel: "Cancel", edited: "edited", confirmDelete: "Delete this comment?", you: "You", member: "Member" },
   tagline: "Daily curated veterinary and human clinical literature",
@@ -89,6 +89,7 @@ const en = {
 };
 
 const ko = {
+  banner: { title: "공지", dismiss: "확인" },
   admin: { notAllowed: "관리자만 볼 수 있는 화면입니다.", setupTitle: "데이터베이스 설정이 끝나지 않았습니다", setupBody: "Supabase SQL Editor에서 supabase/migration_008_admin.sql 을 실행한 뒤 이 페이지를 새로고침하세요. 그 전까지 아래 항목은 비어 있습니다.", title: "관리자", lead: "관리자만 볼 수 있는 것들: 가입 승인, 회원 활동, 공지, 피드백 답장, 요약 비용.",
     papers: "논문", papers7d: "이번 주 추가", summarized: "요약 완료", membersCount: "회원", pending: "승인 대기", comments: "댓글", feedbackNew: "새 피드백",
     members: "회원 활동", membersHint: "각 회원의 가입 이후 누적치. 마지막 활동은 열람·표시·댓글·검색 중 가장 최근 시각.",
@@ -98,7 +99,6 @@ const ko = {
     status_new: "새 글", status_planned: "예정", status_done: "완료", status_declined: "보류", replyPlaceholder: "답장 쓰기…", reply: "답장 저장", replyVisible: "보낸 사람에게 이 답장이 보입니다.", replyAnon: "익명 피드백 — 답장은 여기서만 보입니다.",
     usage: "AI 요약 사용량", usageHint: "자동·수동으로 만든 모든 요약의 토큰 수가 기록됩니다. 비용은 입력 ${i}/M, 출력 ${o}/M 토큰 기준 추정치입니다.",
     thisMonth: "이번 달 요약", thisMonthCost: "이번 달 추정 비용", allTime: "전체 요약", allTimeCost: "전체 추정 비용", month: "월", source: "구분", count: "요약 수", tokens: "토큰 입력 / 출력", estCost: "추정 비용", src_auto: "자동", src_manual: "수동" },
-  banner: { dismiss: "닫기" },
   feedbackMine: { title: "내가 보낸 피드백", reply: "답장" },
   comments: { title: "토론", empty: "아직 댓글이 없습니다. 동료들과 이야기를 시작해 보세요.", placeholder: "팀과 나눌 생각을 적어 주세요…", hint: "⌘/Ctrl + Enter로 등록", post: "등록", edit: "수정", delete: "삭제", save: "저장", cancel: "취소", edited: "수정됨", confirmDelete: "이 댓글을 삭제할까요?", you: "나", member: "멤버" },
   tagline: "수의·인의 임상 논문을 매일 아침 큐레이션",
@@ -173,6 +173,7 @@ const ko = {
 
 // 이하 언어는 핵심 UI만 번역. 빠진 항목은 영어로 표시됨.
 const ja = {
+  banner: { title: "お知らせ", dismiss: "確認" },
   comments: { title: "ディスカッション", empty: "まだコメントはありません。", placeholder: "チームと共有するコメント…", hint: "⌘/Ctrl + Enter で投稿", post: "投稿", edit: "編集", delete: "削除", save: "保存", cancel: "キャンセル", edited: "編集済み", confirmDelete: "このコメントを削除しますか？", you: "自分", member: "メンバー" },
   tagline: "獣医・医学の臨床論文を毎朝キュレーション",
   nav: { feed: "論文", recs: "おすすめ", bookmarks: "ブックマーク", history: "履歴", about: "仕組み", feedback: "フィードバック", settings: "設定" },
@@ -191,6 +192,7 @@ const ja = {
 };
 
 const de = {
+  banner: { title: "Ankündigung", dismiss: "Verstanden" },
   comments: { title: "Diskussion", empty: "Noch keine Kommentare.", placeholder: "Gedanken mit dem Team teilen…", hint: "⌘/Strg + Enter zum Senden", post: "Senden", edit: "Bearbeiten", delete: "Löschen", save: "Speichern", cancel: "Abbrechen", edited: "bearbeitet", confirmDelete: "Kommentar löschen?", you: "Du", member: "Mitglied" },
   tagline: "Täglich kuratierte veterinär- und humanmedizinische Literatur",
   nav: { feed: "Artikel", recs: "Für dich", bookmarks: "Lesezeichen", history: "Verlauf", about: "So funktioniert es", feedback: "Feedback", settings: "Einstellungen" },
@@ -209,6 +211,7 @@ const de = {
 };
 
 const es = {
+  banner: { title: "Aviso", dismiss: "Entendido" },
   comments: { title: "Discusión", empty: "Aún no hay comentarios.", placeholder: "Comparte una idea con el equipo…", hint: "⌘/Ctrl + Enter para publicar", post: "Publicar", edit: "Editar", delete: "Eliminar", save: "Guardar", cancel: "Cancelar", edited: "editado", confirmDelete: "¿Eliminar este comentario?", you: "Tú", member: "Miembro" },
   tagline: "Literatura clínica veterinaria y humana, curada cada mañana",
   nav: { feed: "Artículos", recs: "Para ti", bookmarks: "Guardados", history: "Historial", about: "Cómo funciona", feedback: "Comentarios", settings: "Ajustes" },

@@ -204,7 +204,7 @@ function Shell() {
   const summaryDefault = me?.summary_lang || (lang === "ko" ? "ko" : "en");
 
   return (
-    <div className={`app ${banners.some((b) => !dismissed.includes(b.id)) ? "has-banner" : ""}`}>
+    <div className="app">
       <header className="appbar">
         <button className="btn small ghost mobile-only" onClick={() => setRailOpen(true)} aria-label="Filters">☰</button>
         <button type="button" className="logo logo-btn" onClick={() => { setView("feed"); setSelected(null); }} title={t("nav.feed")}><span className="logo-mark" />Vet Stacks</button>
@@ -225,12 +225,29 @@ function Shell() {
         <span className="who">{displayName}</span>
       </header>
 
-      {banners.filter((b) => !dismissed.includes(b.id)).slice(0, 1).map((b) => (
-        <div key={b.id} className={`banner ${b.level}`}>
-          <span>{b.body}</span>
-          <button className="btn small ghost" onClick={() => { const d = [...dismissed, b.id]; setDismissed(d); localStorage.setItem("dismissed_ann", JSON.stringify(d)); }}>{t("banner.dismiss")}</button>
-        </div>
-      ))}
+      {(() => {
+        const pending = banners.filter((b) => !dismissed.includes(b.id));
+        const b = pending[0];
+        if (!b) return null;
+        const close = () => { const d = [...dismissed, b.id]; setDismissed(d); localStorage.setItem("dismissed_ann", JSON.stringify(d)); };
+        return (
+          <div className="modal-backdrop" role="dialog" aria-modal="true" aria-label={t("banner.title")}
+            onClick={(e) => { if (e.target === e.currentTarget) close(); }}
+            onKeyDown={(e) => { if (e.key === "Escape") close(); }} tabIndex={-1}>
+            <div className={`modal ${b.level}`}>
+              <div className="modal-head">
+                <span className="modal-tag">{b.level === "warning" ? t("admin.warning") : t("admin.info")}</span>
+                <b>{t("banner.title")}</b>
+                {pending.length > 1 && <span className="muted">{pending.length}</span>}
+              </div>
+              <div className="modal-body">{b.body}</div>
+              <div className="modal-foot">
+                <button className="btn primary" autoFocus onClick={close}>{t("banner.dismiss")}</button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
       {listView ? (
         <div className={`body ${selected ? "reading" : ""} ${view !== "feed" ? "no-rail" : ""}`}>
           {view === "feed" && <FilterRail group={group} setGroup={setGroup} facets={facets} filters={filters} setFilters={setFilters} open={railOpen} onClose={() => setRailOpen(false)} />}
