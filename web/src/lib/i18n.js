@@ -5,7 +5,7 @@ export const LANGS = [
 ];
 
 const en = {
-  pubmed: { title: "Search PubMed", lead: "Search all of PubMed — not just the journals we collect. Import the ones you want and they join your library with summaries, notes and comments.",
+  pubmed: { title: "Not in your library?", inlineHint: "Search all of PubMed with the same terms and import what you need.", searchHere: "Search PubMed", hide: "Hide",
     placeholder: "e.g. tibial plateau leveling osteotomy complications", search: "Search", searching: "Searching…",
     sortDate: "Newest first", syntaxHint: "PubMed syntax works here: AND / OR / NOT, \"exact phrase\", author[au], journal[ta].",
     results: "{n} results on PubMed", noResults: "Nothing found. Try fewer or broader terms.",
@@ -24,7 +24,7 @@ const en = {
   feedbackMine: { title: "Your feedback", reply: "Reply" },
   comments: { title: "Discussion", empty: "No comments yet. Start the discussion with your colleagues.", placeholder: "Share a thought with the team…", hint: "⌘/Ctrl + Enter to post", post: "Post", edit: "Edit", delete: "Delete", save: "Save", cancel: "Cancel", edited: "edited", confirmDelete: "Delete this comment?", you: "You", member: "Member" },
   tagline: "Daily curated veterinary and human clinical literature",
-  nav: { feed: "Papers", recs: "For you", bookmarks: "Bookmarks", history: "History", pubmed: "PubMed", about: "How it works", feedback: "Feedback", settings: "Settings", admin: "Admin" },
+  nav: { feed: "Papers", recs: "For you", bookmarks: "Bookmarks", history: "History", about: "How it works", feedback: "Feedback", settings: "Settings", admin: "Admin" },
   search: "Search titles, abstracts, summaries…",
   view: { label: "Group by", category: "Field", journal: "Journal", latest: "Newest" },
   filter: { species: "Domain", vet: "Veterinary", human: "Human", period: "Published within", all: "All time", days: "{n}d", years: "{n}y",
@@ -95,7 +95,7 @@ const en = {
 };
 
 const ko = {
-  pubmed: { title: "PubMed 검색", lead: "우리가 수집하는 저널뿐 아니라 PubMed 전체를 검색합니다. 원하는 논문만 가져오면 요약·메모·댓글과 함께 내 서재에 들어옵니다.",
+  pubmed: { title: "서재에 없나요?", inlineHint: "같은 검색어로 PubMed 전체를 찾아보고 필요한 것만 가져옵니다.", searchHere: "PubMed에서 찾기", hide: "접기",
     placeholder: "예: tibial plateau leveling osteotomy complications", search: "검색", searching: "검색 중…",
     sortDate: "최신순", syntaxHint: "PubMed 문법을 그대로 씁니다: AND / OR / NOT, \"정확한 구절\", author[au], journal[ta].",
     results: "PubMed 검색 결과 {n}건", noResults: "결과가 없습니다. 더 넓은 검색어로 시도해 보세요.",
@@ -114,7 +114,7 @@ const ko = {
   feedbackMine: { title: "내가 보낸 피드백", reply: "답장" },
   comments: { title: "토론", empty: "아직 댓글이 없습니다. 동료들과 이야기를 시작해 보세요.", placeholder: "팀과 나눌 생각을 적어 주세요…", hint: "⌘/Ctrl + Enter로 등록", post: "등록", edit: "수정", delete: "삭제", save: "저장", cancel: "취소", edited: "수정됨", confirmDelete: "이 댓글을 삭제할까요?", you: "나", member: "멤버" },
   tagline: "수의·인의 임상 논문을 매일 아침 큐레이션",
-  nav: { feed: "논문", recs: "추천", bookmarks: "북마크", history: "히스토리", pubmed: "PubMed", about: "작동 방식", feedback: "피드백", settings: "설정", admin: "관리자" },
+  nav: { feed: "논문", recs: "추천", bookmarks: "북마크", history: "히스토리", about: "작동 방식", feedback: "피드백", settings: "설정", admin: "관리자" },
   search: "제목·초록·요약 검색…",
   view: { label: "묶어 보기", category: "분야", journal: "저널", latest: "최신순" },
   filter: { species: "대상", vet: "수의", human: "인의", period: "발행 기간", all: "전체", days: "{n}일", years: "{n}년",
@@ -188,7 +188,7 @@ const ja = {
   banner: { title: "お知らせ", dismiss: "確認" },
   comments: { title: "ディスカッション", empty: "まだコメントはありません。", placeholder: "チームと共有するコメント…", hint: "⌘/Ctrl + Enter で投稿", post: "投稿", edit: "編集", delete: "削除", save: "保存", cancel: "キャンセル", edited: "編集済み", confirmDelete: "このコメントを削除しますか？", you: "自分", member: "メンバー" },
   tagline: "獣医・医学の臨床論文を毎朝キュレーション",
-  nav: { feed: "論文", recs: "おすすめ", bookmarks: "ブックマーク", history: "履歴", pubmed: "PubMed", about: "仕組み", feedback: "フィードバック", settings: "設定" },
+  nav: { feed: "論文", recs: "おすすめ", bookmarks: "ブックマーク", history: "履歴", about: "仕組み", feedback: "フィードバック", settings: "設定" },
   search: "タイトル・抄録・要約を検索…",
   view: { label: "グループ", category: "分野", journal: "ジャーナル", latest: "新着順" },
   filter: { species: "対象", vet: "獣医", human: "医学", period: "発行期間", all: "すべて", days: "{n}日", years: "{n}年", state: "状態", unread: "未読", read: "既読", bookmarked: "ブックマーク", noted: "メモあり", ai: "AI要約", categories: "分野", journals: "ジャーナル", reset: "フィルター解除", selected: "{n}件選択", afterCollect: "初回収集後に表示" },
@@ -207,7 +207,7 @@ const de = {
   banner: { title: "Ankündigung", dismiss: "Verstanden" },
   comments: { title: "Diskussion", empty: "Noch keine Kommentare.", placeholder: "Gedanken mit dem Team teilen…", hint: "⌘/Strg + Enter zum Senden", post: "Senden", edit: "Bearbeiten", delete: "Löschen", save: "Speichern", cancel: "Abbrechen", edited: "bearbeitet", confirmDelete: "Kommentar löschen?", you: "Du", member: "Mitglied" },
   tagline: "Täglich kuratierte veterinär- und humanmedizinische Literatur",
-  nav: { feed: "Artikel", recs: "Für dich", bookmarks: "Lesezeichen", history: "Verlauf", pubmed: "PubMed", about: "So funktioniert es", feedback: "Feedback", settings: "Einstellungen" },
+  nav: { feed: "Artikel", recs: "Für dich", bookmarks: "Lesezeichen", history: "Verlauf", about: "So funktioniert es", feedback: "Feedback", settings: "Einstellungen" },
   search: "Titel, Abstracts, Zusammenfassungen durchsuchen…",
   view: { label: "Gruppieren", category: "Fachgebiet", journal: "Journal", latest: "Neueste" },
   filter: { species: "Bereich", vet: "Veterinär", human: "Human", period: "Veröffentlicht in", all: "Gesamt", days: "{n} T.", years: "{n} J.", state: "Status", unread: "Ungelesen", read: "Gelesen", bookmarked: "Lesezeichen", noted: "Mit Notiz", ai: "KI-Zusammenfassung", categories: "Fachgebiete", journals: "Journals", reset: "Filter zurücksetzen", selected: "{n} ausgewählt", afterCollect: "Erscheint nach der ersten Sammlung" },
@@ -226,7 +226,7 @@ const es = {
   banner: { title: "Aviso", dismiss: "Entendido" },
   comments: { title: "Discusión", empty: "Aún no hay comentarios.", placeholder: "Comparte una idea con el equipo…", hint: "⌘/Ctrl + Enter para publicar", post: "Publicar", edit: "Editar", delete: "Eliminar", save: "Guardar", cancel: "Cancelar", edited: "editado", confirmDelete: "¿Eliminar este comentario?", you: "Tú", member: "Miembro" },
   tagline: "Literatura clínica veterinaria y humana, curada cada mañana",
-  nav: { feed: "Artículos", recs: "Para ti", bookmarks: "Guardados", history: "Historial", pubmed: "PubMed", about: "Cómo funciona", feedback: "Comentarios", settings: "Ajustes" },
+  nav: { feed: "Artículos", recs: "Para ti", bookmarks: "Guardados", history: "Historial", about: "Cómo funciona", feedback: "Comentarios", settings: "Ajustes" },
   search: "Buscar títulos, resúmenes, abstracts…",
   view: { label: "Agrupar por", category: "Campo", journal: "Revista", latest: "Recientes" },
   filter: { species: "Ámbito", vet: "Veterinaria", human: "Humana", period: "Publicado en", all: "Todo", days: "{n} d", years: "{n} a", state: "Estado", unread: "Sin leer", read: "Leído", bookmarked: "Guardado", noted: "Con notas", ai: "Resumen IA", categories: "Campos", journals: "Revistas", reset: "Quitar filtros", selected: "{n} seleccionados", afterCollect: "Aparece tras la primera recolección" },

@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { downloadObsidianBundle, downloadAnki } from "../lib/export";
 import { useT, fmtDate, fmtDateTime } from "../lib/i18n";
 
-export default function PaperList({ papers, states, selectedId, onSelect, loading, hasMore, onMore, view, group, total, lastCollected, commentCounts = {}, onReadwise, onNotion, onToggleRead }) {
+export default function PaperList({ papers, states, selectedId, onSelect, loading, hasMore, onMore, view, group, total, lastCollected, commentCounts = {}, onReadwise, onNotion, onToggleRead, footer }) {
   const { t, lang } = useT();
   const unread = papers.filter((p) => !states[p.id]?.is_read).length;
 
@@ -72,6 +72,7 @@ export default function PaperList({ papers, states, selectedId, onSelect, loadin
 
       {loading && <div className="empty"><span className="spin" />{t("list.loading")}</div>}
       {!loading && hasMore && <button className="btn more" onClick={onMore}>{t("list.more")}</button>}
+      {footer}
     </section>
   );
 }
