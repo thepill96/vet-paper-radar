@@ -14,6 +14,8 @@ import Feedback from "./components/Feedback";
 import Admin from "./components/Admin";
 
 const PAGE = 60;
+// fts(색인용 tsvector)는 초록만큼 커서 목록에서 제외한다
+const COLS = "id,pmid,doi,title,abstract,authors,journal,journal_abbrev,journal_group,pub_date,species,categories,study_type_hint,url,language,vernacular_title,summary_ko,clinical_points,evidence_level,relevance_note,summary_en,clinical_points_en,evidence_level_en,relevance_note_en,study_type,summarized_at,created_at";
 const DEFAULT_FILTERS = { species: null, categories: [], journal: null, state: null, period: 365 };
 const NAV = ["feed", "recs", "bookmarks", "history", "about", "feedback", "settings"];
 
@@ -94,14 +96,14 @@ function Shell() {
     if (!user || !approved) return;
     const id = new URLSearchParams(window.location.search).get("paper");
     if (!id) return;
-    supabase.from("papers").select("*").eq("id", id).single().then(({ data }) => { if (data) select(data); window.history.replaceState({}, "", window.location.pathname); });
+    supabase.from("papers").select(COLS).eq("id", id).single().then(({ data }) => { if (data) select(data); window.history.replaceState({}, "", window.location.pathname); });
   }, [user?.id, approved]); // eslint-disable-line
 
   const load = useCallback(async (pageNo, replace) => {
     if (!user || !approved) return;
     setLoading(true);
     const done = (rows, count) => { setPapers(rows); setTotal(count); setHasMore(false); setLoading(false); };
-    let q = supabase.from("papers").select("*", { count: pageNo === 0 ? "exact" : undefined });
+    let q = supabase.from("papers").select(COLS, { count: pageNo === 0 ? "estimated" : undefined });
 
     if (["bookmarks", "history", "recs"].includes(view)) {
       let ids = [], extra = {};
@@ -116,7 +118,7 @@ function Shell() {
         for (const x of r || []) if (!ids.includes(x.paper_id)) { ids.push(x.paper_id); extra[x.paper_id] = x.reason; }
       }
       if (!ids.length) return done([], 0);
-      const { data } = await supabase.from("papers").select("*").in("id", ids);
+      const { data } = await supabase.from("papers").select(COLS).in("id", ids);
       const byId = Object.fromEntries((data || []).map((p) => [p.id, p]));
       fetchCounts(ids);
       return done(ids.map((id) => byId[id] && { ...byId[id], _reason: extra[id] }).filter(Boolean), ids.length);
@@ -158,6 +160,18 @@ function Shell() {
     const { data } = await supabase.rpc("comment_counts", { ids });
     if (data) setCommentCounts((c) => ({ ...c, ...Object.fromEntries(data.map((r) => [r.paper_id, Number(r.n)])) }));
   }
+
+  // 타이핑이 멈추면 자동으로 검색 (버튼·엔터 없이)
+  useEffect(() => {
+    if (view !== "feed") return;
+    const term = qInput.trim();
+    if (term === query) return;
+    const timer = setTimeout(() => {
+      setQuery(term);
+      if (term) supabase.from("search_log").insert({ user_id: user.id, query: term });
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [qInput, view]); // eslint-disable-line
 
   const listView = ["feed", "recs", "bookmarks", "history"].includes(view);
   useEffect(() => { if (listView) { setPage(0); load(0, true); } }, [view, filters, query, group, user?.id, approved]); // eslint-disable-line

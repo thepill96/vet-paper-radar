@@ -24,7 +24,7 @@ export default function PaperList({ papers, states, selectedId, onSelect, loadin
     <section className="list">
       <div className="list-head">
         <div>
-          <div className="list-title">{t(`list.${view}`)} <span className="count">{total ?? papers.length}</span>{view === "feed" && unread > 0 && <span className="unread-count">{t("list.unread", { n: unread })}</span>}</div>
+          <div className="list-title">{t(`list.${view}`)} <span className="count">{total == null ? papers.length : total > 500 ? `~${total.toLocaleString()}` : total.toLocaleString()}</span>{view === "feed" && unread > 0 && <span className="unread-count">{t("list.unread", { n: unread })}</span>}</div>
           {lastCollected && <div className="list-sub">{t("list.updated", { t: fmtDateTime(lastCollected, lang) })}</div>}
         </div>
         {(view === "bookmarks" || view === "history") && papers.length > 0 && (
