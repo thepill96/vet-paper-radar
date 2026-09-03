@@ -166,7 +166,8 @@ Supabase 대시보드 로그인(GitHub 계정)만 살아 있으면 언제든 복
 **메일이 안 올 때** — Supabase 무료 플랜의 기본 발송은 시간당 통수 제한이 있고 스팸함으로 가기 쉽습니다. 스팸함을 먼저 확인하고, 자주 쓸 것 같으면 Authentication → Emails에서 SMTP(예: Resend)를 연결하세요.
 
 ## 문제 해결
-- **관리자 탭이 비어 있음**: `supabase/migration_008_admin.sql`을 실행하지 않은 것. 실행하면 화면 위에 뜨던 노란 안내가 사라집니다.
+- **관리자 탭 내용이 비어 있음**: `supabase/migration_008_admin.sql`을 실행하지 않은 것. 실행하면 화면 위 노란 안내가 사라지고 숫자가 채워집니다.
+- **로그인 화면 주소에 `error=access_denied&error_code=otp_expired`가 붙음**: 만료된(또는 이미 사용한) 인증·재설정 메일 링크를 누른 것. 주소에서 `#` 뒤를 지우고 다시 들어가 새 링크를 요청하세요.
 - **가입했는데 "승인 대기 중"만 보임**: 관리자 계정으로 설정 → 사용자 승인. 본인이 첫 가입자인데도 그렇다면 SQL Editor에서 `update public.profiles set is_admin = true, status = 'approved' where email = '본인이메일';`
 - **로그인 후 빈 화면/에러**: Supabase URL Configuration의 Redirect URLs에 배포 주소가 없는 경우.
 - **논문이 하나도 없음**: Actions 탭에서 "Fetch PubMed papers" 실행 기록과 로그 확인. Secrets 이름 오타가 가장 흔함.

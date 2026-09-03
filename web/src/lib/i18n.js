@@ -5,7 +5,7 @@ export const LANGS = [
 ];
 
 const en = {
-  admin: { setupTitle: "Database setup incomplete", setupBody: "Run supabase/migration_008_admin.sql in the Supabase SQL Editor, then reload this page. Until then the sections below stay empty.", title: "Admin", lead: "Everything only administrators can see: approvals, member activity, announcements, feedback replies and summary costs.",
+  admin: { notAllowed: "This section is for administrators only.", setupTitle: "Database setup incomplete", setupBody: "Run supabase/migration_008_admin.sql in the Supabase SQL Editor, then reload this page. Until then the sections below stay empty.", title: "Admin", lead: "Everything only administrators can see: approvals, member activity, announcements, feedback replies and summary costs.",
     papers: "Papers", papers7d: "Added this week", summarized: "Summarised", membersCount: "Members", pending: "Pending", comments: "Comments", feedbackNew: "New feedback",
     members: "Member activity", membersHint: "Counts since each member joined. Last active is the most recent open, mark, comment or search.",
     member: "Member", opened: "Opened", read: "Read", bookmarks: "Bookmarks", notes: "Notes", commentsCol: "Comments", searches: "Searches", lastActive: "Last active",
@@ -43,6 +43,8 @@ const en = {
     exists: "That email already has an account — sign in instead.",
     signedUp: "Account created. Confirm your email, then sign in.",
     approvalNote: "New accounts are reviewed by the administrator before you can read papers.",
+    linkExpired: "That email link has expired or was already used. Request a new one below — links are valid for about an hour.",
+    linkError: "Sign-in link failed ({code}). Please try again below.",
     forgot: "Forgot your password?", backToSignIn: "Back to sign in", sendReset: "Send reset link",
     resetSent: "If that address has an account, a reset link is on its way. Check your inbox and spam folder.",
     newPassword: "Set a new password", newPasswordHint: "Choose a password of at least 6 characters. You will be signed in afterwards.",
@@ -84,7 +86,7 @@ const en = {
 };
 
 const ko = {
-  admin: { setupTitle: "데이터베이스 설정이 끝나지 않았습니다", setupBody: "Supabase SQL Editor에서 supabase/migration_008_admin.sql 을 실행한 뒤 이 페이지를 새로고침하세요. 그 전까지 아래 항목은 비어 있습니다.", title: "관리자", lead: "관리자만 볼 수 있는 것들: 가입 승인, 회원 활동, 공지, 피드백 답장, 요약 비용.",
+  admin: { notAllowed: "관리자만 볼 수 있는 화면입니다.", setupTitle: "데이터베이스 설정이 끝나지 않았습니다", setupBody: "Supabase SQL Editor에서 supabase/migration_008_admin.sql 을 실행한 뒤 이 페이지를 새로고침하세요. 그 전까지 아래 항목은 비어 있습니다.", title: "관리자", lead: "관리자만 볼 수 있는 것들: 가입 승인, 회원 활동, 공지, 피드백 답장, 요약 비용.",
     papers: "논문", papers7d: "이번 주 추가", summarized: "요약 완료", membersCount: "회원", pending: "승인 대기", comments: "댓글", feedbackNew: "새 피드백",
     members: "회원 활동", membersHint: "각 회원의 가입 이후 누적치. 마지막 활동은 열람·표시·댓글·검색 중 가장 최근 시각.",
     member: "회원", opened: "열람", read: "읽음", bookmarks: "북마크", notes: "메모", commentsCol: "댓글", searches: "검색", lastActive: "마지막 활동",
@@ -122,6 +124,8 @@ const ko = {
     exists: "이미 가입된 이메일입니다 — 로그인해 주세요.",
     signedUp: "가입됨. 인증 메일의 링크를 누른 뒤 로그인하세요.",
     approvalNote: "새 계정은 운영자 승인 후 논문을 볼 수 있습니다.",
+    linkExpired: "메일 링크가 만료되었거나 이미 사용되었습니다. 아래에서 새로 요청하세요. 링크는 약 1시간 동안만 유효합니다.",
+    linkError: "로그인 링크 오류({code})입니다. 아래에서 다시 시도해 주세요.",
     forgot: "비밀번호를 잊으셨나요?", backToSignIn: "로그인으로 돌아가기", sendReset: "재설정 링크 보내기",
     resetSent: "가입된 주소라면 재설정 링크를 보냈습니다. 받은편지함과 스팸함을 확인하세요.",
     newPassword: "새 비밀번호 설정", newPasswordHint: "6자 이상으로 정하세요. 저장하면 바로 로그인됩니다.",

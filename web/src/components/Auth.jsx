@@ -2,7 +2,7 @@ import { useState } from "react";
 import { supabase } from "../lib/supabase";
 import { useT, LANGS } from "../lib/i18n";
 
-export default function Auth() {
+export default function Auth({ linkError, onClearLinkError }) {
   const { t, lang, setLang } = useT();
   const [mode, setMode] = useState("login"); // login | signup | forgot
   const [email, setEmail] = useState("");
@@ -19,7 +19,7 @@ export default function Auth() {
   };
 
   async function google() {
-    setBusy("google"); setMsg(null);
+    setBusy("google"); setMsg(null); onClearLinkError?.();
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: { redirectTo: window.location.origin + import.meta.env.BASE_URL },
@@ -28,7 +28,7 @@ export default function Auth() {
   }
 
   async function submit(e) {
-    e.preventDefault(); setBusy("email"); setMsg(null);
+    e.preventDefault(); setBusy("email"); setMsg(null); onClearLinkError?.();
     try {
       if (mode === "forgot") {
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
@@ -57,6 +57,12 @@ export default function Auth() {
           </select>
         </div>
         <p>{t("auth.blurb")}</p>
+
+        {linkError && (
+          <div className="auth-msg err link-error">
+            {/otp_expired|access_denied/.test(linkError) ? t("auth.linkExpired") : t("auth.linkError", { code: linkError })}
+          </div>
+        )}
 
         <div className="oauth">
           <button type="button" className="btn wide oauth-btn" disabled={busy} onClick={google}>

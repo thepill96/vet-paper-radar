@@ -4,6 +4,7 @@ import { I18nContext, makeT, detectLang, LANGS } from "./lib/i18n";
 import Auth from "./components/Auth";
 import Pending from "./components/Pending";
 import ResetPassword from "./components/ResetPassword";
+import ErrorBoundary from "./components/ErrorBoundary";
 import FilterRail from "./components/FilterRail";
 import PaperList from "./components/PaperList";
 import PaperDetail from "./components/PaperDetail";
@@ -28,6 +29,13 @@ function Shell() {
   const [session, setSession] = useState(undefined);
   // 재설정 메일 링크로 들어온 경우 (해시에 type=recovery)
   const [recovery, setRecovery] = useState(() => /type=recovery/.test(window.location.hash || ""));
+  // 메일 링크가 만료·재사용된 경우 (#error=... 형태로 돌아옴)
+  const [linkError, setLinkError] = useState(() => {
+    const h = new URLSearchParams((window.location.hash || "").replace(/^#/, ""));
+    const code = h.get("error_code") || h.get("error");
+    if (code) window.history.replaceState({}, "", window.location.pathname);
+    return code || null;
+  });
   const [me, setMe] = useState(undefined);
   const [view, setView] = useState("feed");
   const [group, setGroup] = useState("category");
@@ -182,7 +190,7 @@ function Shell() {
   if (!configured) return <div className="auth"><div className="auth-card"><h1>Configuration needed</h1><p>Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to web/.env and restart.</p></div></div>;
   if (session === undefined) return null;
   if (recovery && session) return <ResetPassword onDone={() => { setRecovery(false); window.location.hash = ""; }} />;
-  if (!session) return <Auth />;
+  if (!session) return <Auth linkError={linkError} onClearLinkError={() => setLinkError(null)} />;
   if (me === undefined) return null;
   if (!approved) return <Pending user={user} blocked={me?.status === "blocked"} />;
 
@@ -228,9 +236,12 @@ function Shell() {
         </div>
       ) : (
         <main className="reader">
+          <ErrorBoundary resetKey={view}>
           {view === "settings" && <Settings user={user} me={me} onSignOut={() => supabase.auth.signOut()} onProfileChange={(p) => setMe((m) => ({ ...m, ...p }))} />}
           {view === "about" && <About />}
           {view === "feedback" && <Feedback user={user} />}
+          {view === "admin" && (me?.is_admin ? <Admin user={user} /> : <div className="page"><p className="lead">{t("admin.notAllowed")}</p></div>)}
+          </ErrorBoundary>
         </main>
       )}
       {toast && <div role="status" className="toast">{toast}</div>}

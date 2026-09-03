@@ -4,7 +4,8 @@ import { useT, fmtDate, fmtDateTime } from "../lib/i18n";
 
 // Claude API 단가 (USD / 1M tokens). 모델 가격이 바뀌면 여기만 고치면 됨. 화면에는 "추정"으로 표시.
 const PRICE = { input: 3, output: 15 };
-const cost = (i, o) => ((i * PRICE.input + o * PRICE.output) / 1e6);
+const num = (v) => { const n = Number(v); return Number.isFinite(n) ? n : 0; };
+const cost = (i, o) => ((num(i) * PRICE.input + num(o) * PRICE.output) / 1e6);
 
 export default function Admin({ user }) {
   const { t, lang } = useT();
@@ -31,7 +32,11 @@ export default function Admin({ user }) {
       // 마이그레이션이 아직 실행되지 않으면 함수/테이블이 없어 여기서 오류가 옴
       const missing = [o, u, a, f, g].map((r) => r.error).find((e) => e && /does not exist|schema cache|relation/i.test(e.message));
       setSetupError(missing ? missing.message : null);
-      setOverview(o.data); setUsers(u.data || []); setAnn(a.data || []); setFeedback(f.data || []); setUsage(g.data || []);
+      setOverview(o.data && typeof o.data === "object" ? o.data : null);
+      setUsers(Array.isArray(u.data) ? u.data : []);
+      setAnn(Array.isArray(a.data) ? a.data : []);
+      setFeedback(Array.isArray(f.data) ? f.data : []);
+      setUsage(Array.isArray(g.data) ? g.data : []);
     } catch (e) {
       setSetupError(String(e?.message ?? e));
     }
@@ -54,10 +59,10 @@ export default function Admin({ user }) {
 
   const pending = users.filter((u) => u.status === "pending");
   const others = users.filter((u) => u.status !== "pending");
-  const totals = usage.reduce((a, r) => ({ n: a.n + Number(r.n), i: a.i + Number(r.input_tokens), o: a.o + Number(r.output_tokens) }), { n: 0, i: 0, o: 0 });
+  const totals = usage.reduce((a, r) => ({ n: a.n + num(r.n), i: a.i + num(r.input_tokens), o: a.o + num(r.output_tokens) }), { n: 0, i: 0, o: 0 });
   const thisMonth = new Date().toISOString().slice(0, 7);
   const monthRows = usage.filter((r) => r.month === thisMonth);
-  const month = monthRows.reduce((a, r) => ({ n: a.n + Number(r.n), i: a.i + Number(r.input_tokens), o: a.o + Number(r.output_tokens) }), { n: 0, i: 0, o: 0 });
+  const month = monthRows.reduce((a, r) => ({ n: a.n + num(r.n), i: a.i + num(r.input_tokens), o: a.o + num(r.output_tokens) }), { n: 0, i: 0, o: 0 });
 
   return (
     <div className="page wide">
@@ -86,7 +91,7 @@ export default function Admin({ user }) {
         {pending.length === 0 && <div className="muted">{t("settings.noPending")}</div>}
         {pending.map((u) => (
           <div key={u.id} className="user-row">
-            <div><b>{u.email}</b><div className="muted">{u.display_name} · {fmtDate(u.created_at, lang)}</div></div>
+            <div><b>{u.email}</b><div className="muted">{u.display_name || ""} · {u.created_at ? fmtDate(u.created_at, lang) : "—"}</div></div>
             <button className="btn small primary" onClick={() => patchUser(u.id, { status: "approved" })}>{t("settings.approve")}</button>
             <button className="btn small" onClick={() => patchUser(u.id, { status: "blocked" })}>{t("settings.block")}</button>
           </div>
@@ -102,8 +107,8 @@ export default function Admin({ user }) {
             <tbody>
               {others.map((u) => (
                 <tr key={u.id} className={u.status === "blocked" ? "dim" : ""}>
-                  <td><b>{u.display_name || u.email.split("@")[0]}</b><div className="muted">{u.email}{u.is_admin && ` · ${t("settings.admin")}`}{u.status === "blocked" && ` · ${t("settings.blocked")}`}</div></td>
-                  <td>{u.opened}</td><td>{u.read_count}</td><td>{u.bookmarks}</td><td>{u.notes}</td><td>{u.comments}</td><td>{u.searches}</td>
+                  <td><b>{u.display_name || (u.email || "").split("@")[0]}</b><div className="muted">{u.email}{u.is_admin && ` · ${t("settings.admin")}`}{u.status === "blocked" && ` · ${t("settings.blocked")}`}</div></td>
+                  <td>{num(u.opened)}</td><td>{num(u.read_count)}</td><td>{num(u.bookmarks)}</td><td>{num(u.notes)}</td><td>{num(u.comments)}</td><td>{num(u.searches)}</td>
                   <td className="muted">{u.last_active ? fmtDateTime(u.last_active, lang) : "—"}</td>
                   <td className="actions">{u.id !== user.id && <>
                     <button className="btn small" onClick={() => patchUser(u.id, { status: u.status === "approved" ? "blocked" : "approved" })}>{u.status === "approved" ? t("settings.block") : t("settings.approve")}</button>
@@ -128,7 +133,7 @@ export default function Admin({ user }) {
         </form>
         {ann.map((a) => (
           <div key={a.id} className={`user-row ${a.active ? "" : "dim"}`}>
-            <div><div style={{ whiteSpace: "pre-wrap" }}>{a.body}</div><div className="muted">{t(`admin.${a.level}`)} · {fmtDateTime(a.created_at, lang)}{!a.active && ` · ${t("admin.inactive")}`}</div></div>
+            <div><div style={{ whiteSpace: "pre-wrap" }}>{a.body}</div><div className="muted">{t(`admin.${a.level || "info"}`)} · {a.created_at ? fmtDateTime(a.created_at, lang) : ""}{!a.active && ` · ${t("admin.inactive")}`}</div></div>
             <button className="btn small" onClick={() => act(supabase.from("announcements").update({ active: !a.active }).eq("id", a.id))}>{a.active ? t("admin.deactivate") : t("admin.activate")}</button>
             <button className="btn small ghost" onClick={() => act(supabase.from("announcements").delete().eq("id", a.id))}>{t("comments.delete")}</button>
           </div>
@@ -141,7 +146,7 @@ export default function Admin({ user }) {
         {feedback.length === 0 && <div className="muted">{t("admin.noFeedback")}</div>}
         {feedback.map((f) => (
           <div key={f.id} className="fb-card">
-            <div className="fb-head"><span className="tag">{f.kind}</span><span className="muted">{fmtDateTime(f.created_at, lang)}{f.contact && ` · ${f.contact}`}{!f.user_id && ` · ${t("admin.anonymous")}`}</span>
+            <div className="fb-head"><span className="tag">{f.kind}</span><span className="muted">{f.created_at ? fmtDateTime(f.created_at, lang) : ""}{f.contact && ` · ${f.contact}`}{!f.user_id && ` · ${t("admin.anonymous")}`}</span>
               <span className="grow" />
               <div className="chips">{["new", "planned", "done", "declined"].map((k) => <button key={k} type="button" className={`chip ${f.status === k ? "on" : ""}`} onClick={() => act(supabase.from("feedback").update({ status: k }).eq("id", f.id))}>{t(`admin.status_${k}`)}</button>)}</div>
             </div>
@@ -167,7 +172,7 @@ export default function Admin({ user }) {
         {usage.length > 0 && (
           <div className="table-wrap"><table className="table">
             <thead><tr><th>{t("admin.month")}</th><th>{t("admin.source")}</th><th>{t("admin.count")}</th><th>{t("admin.tokens")}</th><th>{t("admin.estCost")}</th></tr></thead>
-            <tbody>{usage.map((r, i) => <tr key={i}><td>{r.month}</td><td>{t(`admin.src_${r.source}`)}</td><td>{r.n}</td><td className="muted">{Number(r.input_tokens).toLocaleString()} / {Number(r.output_tokens).toLocaleString()}</td><td>${cost(Number(r.input_tokens), Number(r.output_tokens)).toFixed(2)}</td></tr>)}</tbody>
+            <tbody>{usage.map((r, i) => <tr key={i}><td>{r.month}</td><td>{t(`admin.src_${r.source || "manual"}`)}</td><td>{r.n}</td><td className="muted">{num(r.input_tokens).toLocaleString()} / {num(r.output_tokens).toLocaleString()}</td><td>${cost(Number(r.input_tokens), Number(r.output_tokens)).toFixed(2)}</td></tr>)}</tbody>
           </table></div>
         )}
       </section>
