@@ -32,9 +32,11 @@ function Shell() {
   // 메일 링크가 만료·재사용된 경우 (#error=... 형태로 돌아옴)
   const [linkError, setLinkError] = useState(() => {
     const h = new URLSearchParams((window.location.hash || "").replace(/^#/, ""));
-    const code = h.get("error_code") || h.get("error");
+    const q = new URLSearchParams(window.location.search);
+    const code = h.get("error_code") || q.get("error_code") || h.get("error") || q.get("error");
+    const raw = h.get("error_description") || q.get("error_description");
     if (code) window.history.replaceState({}, "", window.location.pathname);
-    return code || null;
+    return code ? { code, description: raw ? decodeURIComponent(raw.replace(/\+/g, " ")) : null } : null;
   });
   const [me, setMe] = useState(undefined);
   const [view, setView] = useState("feed");
@@ -201,7 +203,7 @@ function Shell() {
     <div className={`app ${banners.some((b) => !dismissed.includes(b.id)) ? "has-banner" : ""}`}>
       <header className="appbar">
         <button className="btn small ghost mobile-only" onClick={() => setRailOpen(true)} aria-label="Filters">☰</button>
-        <div className="logo"><span className="logo-mark" />Vet Stacks</div>
+        <button type="button" className="logo logo-btn" onClick={() => { setView("feed"); setSelected(null); }} title={t("nav.feed")}><span className="logo-mark" />Vet Stacks</button>
         <nav className="nav">
           {[...NAV, ...(me?.is_admin ? ["admin"] : [])].map((k) => <button key={k} className={view === k ? "on" : ""} onClick={() => { setView(k); setSelected(null); }}>{t(`nav.${k}`)}{k === "admin" && pendingCount > 0 && <span className="badge">{pendingCount}</span>}</button>)}
         </nav>

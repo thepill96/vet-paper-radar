@@ -45,6 +45,8 @@ input, textarea, select { font: inherit; color: inherit; }
 .logo-mark::before, .logo-mark::after, .logo-mark { --bar: linear-gradient(90deg, var(--accent), var(--human)); }
 .logo-mark::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 3px; border-radius: 2px; background: var(--bar); }
 .logo-mark::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 3px; border-radius: 2px; background: var(--bar); box-shadow: 0 -5.5px 0 0 var(--accent); }
+.logo-btn { border: 0; background: none; padding: 0; cursor: pointer; }
+.logo-btn:hover { opacity: 0.75; }
 .lang-select { border: 1px solid var(--rule); background: var(--surface); border-radius: 6px; padding: 5px 8px; font-size: 12.5px; color: var(--ink-2); }
 
 /* ---------- buttons / chips ---------- */

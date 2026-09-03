@@ -58,11 +58,18 @@ export default function Auth({ linkError, onClearLinkError }) {
         </div>
         <p>{t("auth.blurb")}</p>
 
-        {linkError && (
-          <div className="auth-msg err link-error">
-            {/otp_expired|access_denied/.test(linkError) ? t("auth.linkExpired") : t("auth.linkError", { code: linkError })}
+        {(msg || linkError) && (() => {
+          const le = typeof linkError === "string" ? { code: linkError } : linkError;
+          const m = msg || { err: true, code: le.code, text: le.description || le.code };
+          return (
+          <div className={`auth-msg ${m.err ? "err" : ""}`}>
+            {m.text}
+            {m.code === "otp_expired" && <div>{t("auth.expiredHint")}</div>}
+            {/(provider is not enabled|validation_failed|unsupported provider)/i.test(`${m.text} ${m.code ?? ""}`) && <div>{t("auth.providerHint")}</div>}
+            {/redirect|Unable to exchange/i.test(`${m.text}`) && <div>{t("auth.redirectHint")}</div>}
           </div>
-        )}
+          );
+        })()}
 
         <div className="oauth">
           <button type="button" className="btn wide oauth-btn" disabled={busy} onClick={google}>
@@ -98,7 +105,6 @@ export default function Auth({ linkError, onClearLinkError }) {
           {mode === "forgot" ? t("auth.backToSignIn") : t("auth.forgot")}
         </button>
 
-        {msg && <div className={`auth-msg ${msg.err ? "err" : ""}`}>{msg.text}</div>}
         <p className="auth-foot">{t("auth.approvalNote")}</p>
       </form>
     </div>
