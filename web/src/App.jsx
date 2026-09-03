@@ -11,13 +11,14 @@ import PaperDetail from "./components/PaperDetail";
 import Settings from "./components/Settings";
 import About from "./components/About";
 import Feedback from "./components/Feedback";
+import PubmedSearch from "./components/PubmedSearch";
 import Admin from "./components/Admin";
 
 const PAGE = 60;
 // fts(색인용 tsvector)는 초록만큼 커서 목록에서 제외한다
 const COLS = "id,pmid,doi,title,abstract,authors,journal,journal_abbrev,journal_group,pub_date,species,categories,study_type_hint,url,language,vernacular_title,summary_ko,clinical_points,evidence_level,relevance_note,summary_en,clinical_points_en,evidence_level_en,relevance_note_en,study_type,summarized_at,created_at";
 const DEFAULT_FILTERS = { species: null, categories: [], journal: null, state: null, period: 365 };
-const NAV = ["feed", "recs", "bookmarks", "history", "about", "feedback", "settings"];
+const NAV = ["feed", "recs", "bookmarks", "history", "pubmed", "about", "feedback", "settings"];
 
 export default function App() {
   const [lang, setLangState] = useState(detectLang);
@@ -277,6 +278,7 @@ function Shell() {
           {view === "settings" && <Settings user={user} me={me} onSignOut={() => supabase.auth.signOut()} onProfileChange={(p) => setMe((m) => ({ ...m, ...p }))} />}
           {view === "about" && <About />}
           {view === "feedback" && <Feedback user={user} />}
+          {view === "pubmed" && <PubmedSearch onImported={() => { supabase.rpc("filter_facets").then(({ data }) => data && setFacets(data)); }} />}
           {view === "admin" && (me?.is_admin ? <Admin user={user} /> : <div className="page"><p className="lead">{t("admin.notAllowed")}</p></div>)}
           </ErrorBoundary>
         </main>
