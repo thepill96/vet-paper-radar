@@ -125,7 +125,11 @@ function Shell() {
     if (filters.species) q = q.eq("species", filters.species);
     if (filters.journal) q = q.eq("journal", filters.journal);
     if (filters.categories.length) q = q.overlaps("categories", filters.categories);
-    if (filters.period) q = q.gte("created_at", new Date(Date.now() - filters.period * 864e5).toISOString());
+    if (filters.period) {
+      // 논문 발행일 기준으로 거른다 (수집일이 아니라). 발행일이 없는 논문은 함께 남긴다.
+      const since = new Date(Date.now() - filters.period * 864e5).toISOString().slice(0, 10);
+      q = q.or(`pub_date.gte.${since},pub_date.is.null`);
+    }
     if (query.trim()) q = q.textSearch("fts", query.trim(), { type: "websearch", config: "simple" });
     if (filters.state === "ai") q = q.not("summary_ko", "is", null);
     if (["read", "noted", "bookmarked"].includes(filters.state)) {
