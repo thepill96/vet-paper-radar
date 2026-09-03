@@ -14,7 +14,7 @@ import Feedback from "./components/Feedback";
 import Admin from "./components/Admin";
 
 const PAGE = 60;
-const DEFAULT_FILTERS = { species: null, categories: [], journal: null, state: null, period: 30 };
+const DEFAULT_FILTERS = { species: null, categories: [], journal: null, state: null, period: 365 };
 const NAV = ["feed", "recs", "bookmarks", "history", "about", "feedback", "settings"];
 
 export default function App() {

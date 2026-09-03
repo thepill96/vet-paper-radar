@@ -14,7 +14,7 @@ export default function FilterRail({ group, setGroup, facets, filters, setFilter
     const validC = new Set(facets.categories.filter((c) => !next || c.species === next).map((c) => c.name));
     return { ...f, species: next, journal: validJ.has(f.journal) ? f.journal : null, categories: f.categories.filter((c) => validC.has(c)) };
   });
-  const reset = () => setFilters({ species: null, categories: [], journal: null, state: null, period: 30 });
+  const reset = () => setFilters({ species: null, categories: [], journal: null, state: null, period: 365 });
   const active = (sp ? 1 : 0) + filters.categories.length + (filters.journal ? 1 : 0) + (filters.state ? 1 : 0);
 
   return (
@@ -34,7 +34,11 @@ export default function FilterRail({ group, setGroup, facets, filters, setFilter
 
       <h3>{t("filter.period")}</h3>
       <div className="chips">
-        {[7, 30, 90, 365, 0].map((d) => <button key={d} className={`chip ${filters.period === d ? "on" : ""}`} onClick={() => setFilters((f) => ({ ...f, period: d }))}>{d === 0 ? t("filter.all") : t("filter.days", { n: d })}</button>)}
+        {[30, 365, 730, 1095, 1825, 0].map((d) => (
+          <button key={d} className={`chip ${filters.period === d ? "on" : ""}`} onClick={() => setFilters((f) => ({ ...f, period: d }))}>
+            {d === 0 ? t("filter.all") : d < 365 ? t("filter.days", { n: d }) : t("filter.years", { n: Math.round(d / 365) })}
+          </button>
+        ))}
       </div>
 
       <h3>{t("filter.state")}</h3>
