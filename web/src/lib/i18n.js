@@ -90,7 +90,7 @@ const en = {
     "Complications & outcomes": "Complications & outcomes", "Other": "Other" },
   design: { "Randomized": "Randomized", "Systematic review / meta-analysis": "Systematic review / meta-analysis", "Prospective": "Prospective", "Retrospective": "Retrospective", "Cadaveric / experimental": "Cadaveric / experimental", "Case report / series": "Case report / series" },
   group: { "Surgery": "Surgery", "Small animal": "Small animal", "Internal medicine": "Internal medicine", "Imaging": "Imaging", "Anesthesia": "Anesthesia", "Emergency": "Emergency", "Oncology": "Oncology",
-    "Non-English veterinary": "Non-English veterinary", "Human orthopedics": "Human orthopedics", "Human neurosurgery": "Human neurosurgery", "Human general surgery": "Human general surgery", "Biomechanics": "Biomechanics" },
+    "Non-English veterinary": "Non-English veterinary", "Human orthopedics": "Human orthopedics", "Human neurosurgery": "Human neurosurgery", "Human general surgery": "Human general surgery", "Biomechanics": "Biomechanics", "Human oncology": "Human oncology", "Hepatobiliary & pancreatic": "Hepatobiliary & pancreatic" },
   original: { eng: "English", kor: "Korean", jpn: "Japanese", ger: "German", fre: "French", spa: "Spanish", ita: "Italian", por: "Portuguese", chi: "Chinese", rus: "Russian", pol: "Polish", tur: "Turkish" },
 };
 
@@ -179,7 +179,7 @@ const ko = {
     "Imaging & planning": "영상·수술계획", "Anesthesia & pain": "마취·통증", "Oncology": "종양", "Internal medicine": "내과", "Complications & outcomes": "합병증·예후", "Other": "기타" },
   design: { "Randomized": "무작위 대조", "Systematic review / meta-analysis": "체계적 문헌고찰·메타분석", "Prospective": "전향적", "Retrospective": "후향적", "Cadaveric / experimental": "사체·실험", "Case report / series": "증례" },
   group: { "Surgery": "외과", "Small animal": "소동물", "Internal medicine": "내과", "Imaging": "영상", "Anesthesia": "마취", "Emergency": "응급", "Oncology": "종양",
-    "Non-English veterinary": "비영어권 수의", "Human orthopedics": "인의 정형", "Human neurosurgery": "인의 신경", "Human general surgery": "인의 일반외과", "Biomechanics": "생체역학" },
+    "Non-English veterinary": "비영어권 수의", "Human orthopedics": "인의 정형", "Human neurosurgery": "인의 신경", "Human general surgery": "인의 일반외과", "Biomechanics": "생체역학", "Human oncology": "인의 종양", "Hepatobiliary & pancreatic": "간담췌" },
   original: { eng: "영어", kor: "한국어", jpn: "일본어", ger: "독일어", fre: "프랑스어", spa: "스페인어", ita: "이탈리아어", por: "포르투갈어", chi: "중국어", rus: "러시아어", pol: "폴란드어", tur: "터키어" },
 };
 

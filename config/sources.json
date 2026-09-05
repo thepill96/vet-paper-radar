@@ -1,74 +1,693 @@
 {
   "_readme": "PubMed collection config (category/group/design names are English keys; the UI translates them). PubMed 수집 설정. 언어 제한 없음(영어·한국어·일본어·독일어 등 모두 수집, 요약은 항상 한/영 두 버전 생성). 비영어권 저널을 더 넣으려면 journals에 추가하면 됨. journals: 저널명은 PubMed [Journal] 필드에 그대로 쓰이는 정식 명칭(또는 NLM 약어). must_match: 인의 저널처럼 양이 많은 곳은 여기 키워드 중 하나 이상이 제목/초록에 있어야 수집됨(비우면 전부 수집). categories: 제목+초록에 키워드가 하나라도 있으면 해당 분야 태그. lookback_days: 매 실행 시 최근 며칠치를 볼지. max_ai_summaries_per_run: 실행당 Claude 요약 생성 상한(비용 통제).",
-
   "lookback_days": 3,
   "max_ai_summaries_per_run": 40,
   "summary_model": "claude-sonnet-4-6",
-
   "journals": [
-    { "name": "Vet Surg", "species": "vet", "group": "Surgery" },
-    { "name": "Vet Comp Orthop Traumatol", "species": "vet", "group": "Surgery" },
-    { "name": "J Small Anim Pract", "species": "vet", "group": "Small animal" },
-    { "name": "Journal of the American Veterinary Medical Association", "species": "vet", "group": "Small animal" },
-    { "name": "American Journal of Veterinary Research", "species": "vet", "group": "Small animal" },
-    { "name": "Journal of Veterinary Internal Medicine", "species": "vet", "group": "Internal medicine" },
-    { "name": "Journal of Feline Medicine and Surgery", "species": "vet", "group": "Small animal" },
-    { "name": "Vet Radiol Ultrasound", "species": "vet", "group": "Imaging" },
-    { "name": "Veterinary Anaesthesia and Analgesia", "species": "vet", "group": "Anesthesia" },
-    { "name": "J Vet Emerg Crit Care (San Antonio)", "species": "vet", "group": "Emergency" },
-    { "name": "Veterinary and Comparative Oncology", "species": "vet", "group": "Oncology" },
-    { "name": "Frontiers in Veterinary Science", "species": "vet", "group": "Small animal",
-      "must_match": ["dog", "dogs", "canine", "cat", "cats", "feline", "small animal"] },
-    { "name": "BMC Veterinary Research", "species": "vet", "group": "Small animal",
-      "must_match": ["dog", "dogs", "canine", "cat", "cats", "feline", "small animal"] },
-    { "name": "Journal of Veterinary Science", "species": "vet", "group": "Small animal" },
-    { "name": "Open Veterinary Journal", "species": "vet", "group": "Small animal" },
-    { "name": "Veterinary Sciences", "species": "vet", "group": "Small animal",
-      "must_match": ["dog", "dogs", "canine", "cat", "cats", "feline", "small animal"] },
-    { "name": "Tierarztliche Praxis. Ausgabe K, Kleintiere/Heimtiere", "species": "vet", "group": "Non-English veterinary" },
-    { "name": "Schweiz Arch Tierheilkd", "species": "vet", "group": "Non-English veterinary",
-      "must_match": ["dog", "dogs", "canine", "cat", "cats", "feline", "Hund", "Katze"] },
-    { "name": "J Vet Med Sci", "species": "vet", "group": "Non-English veterinary",
-      "must_match": ["dog", "dogs", "canine", "cat", "cats", "feline"] },
-    { "name": "Korean J Vet Res", "species": "vet", "group": "Non-English veterinary" },
-
-    { "name": "J Bone Joint Surg Am", "species": "human", "group": "Human orthopedics" },
-    { "name": "The Bone & Joint Journal", "species": "human", "group": "Human orthopedics" },
-    { "name": "Clinical Orthopaedics and Related Research", "species": "human", "group": "Human orthopedics" },
-    { "name": "J Orthop Res", "species": "human", "group": "Human orthopedics" },
-    { "name": "Journal of Orthopaedic Trauma", "species": "human", "group": "Human orthopedics" },
-    { "name": "Injury", "species": "human", "group": "Human orthopedics" },
-    { "name": "Journal of Neurosurgery. Spine", "species": "human", "group": "Human neurosurgery" },
-    { "name": "Spine", "species": "human", "group": "Human neurosurgery" },
-    { "name": "Neurosurgery", "species": "human", "group": "Human neurosurgery" },
-    { "name": "Annals of Surgery", "species": "human", "group": "Human general surgery" },
-    { "name": "JAMA Surgery", "species": "human", "group": "Human general surgery" },
-    { "name": "Br J Surg", "species": "human", "group": "Human general surgery" },
-    { "name": "Journal of Biomechanics", "species": "human", "group": "Biomechanics",
-      "must_match": ["bone", "fracture", "implant", "plate", "screw", "osteotomy", "joint", "cartilage", "tendon", "ligament", "finite element", "spine", "vertebra"] },
-    { "name": "Clin Biomech (Bristol)", "species": "human", "group": "Biomechanics" }
+    {
+      "name": "Vet Surg",
+      "species": "vet",
+      "group": "Surgery"
+    },
+    {
+      "name": "Vet Comp Orthop Traumatol",
+      "species": "vet",
+      "group": "Surgery"
+    },
+    {
+      "name": "J Small Anim Pract",
+      "species": "vet",
+      "group": "Small animal"
+    },
+    {
+      "name": "Journal of the American Veterinary Medical Association",
+      "species": "vet",
+      "group": "Small animal"
+    },
+    {
+      "name": "American Journal of Veterinary Research",
+      "species": "vet",
+      "group": "Small animal"
+    },
+    {
+      "name": "Journal of Veterinary Internal Medicine",
+      "species": "vet",
+      "group": "Internal medicine"
+    },
+    {
+      "name": "Journal of Feline Medicine and Surgery",
+      "species": "vet",
+      "group": "Small animal"
+    },
+    {
+      "name": "Vet Radiol Ultrasound",
+      "species": "vet",
+      "group": "Imaging"
+    },
+    {
+      "name": "Veterinary Anaesthesia and Analgesia",
+      "species": "vet",
+      "group": "Anesthesia"
+    },
+    {
+      "name": "J Vet Emerg Crit Care (San Antonio)",
+      "species": "vet",
+      "group": "Emergency"
+    },
+    {
+      "name": "Veterinary and Comparative Oncology",
+      "species": "vet",
+      "group": "Oncology"
+    },
+    {
+      "name": "Frontiers in Veterinary Science",
+      "species": "vet",
+      "group": "Small animal",
+      "must_match": [
+        "dog",
+        "dogs",
+        "canine",
+        "cat",
+        "cats",
+        "feline",
+        "small animal"
+      ]
+    },
+    {
+      "name": "BMC Veterinary Research",
+      "species": "vet",
+      "group": "Small animal",
+      "must_match": [
+        "dog",
+        "dogs",
+        "canine",
+        "cat",
+        "cats",
+        "feline",
+        "small animal"
+      ]
+    },
+    {
+      "name": "Journal of Veterinary Science",
+      "species": "vet",
+      "group": "Small animal"
+    },
+    {
+      "name": "Open Veterinary Journal",
+      "species": "vet",
+      "group": "Small animal"
+    },
+    {
+      "name": "Veterinary Sciences",
+      "species": "vet",
+      "group": "Small animal",
+      "must_match": [
+        "dog",
+        "dogs",
+        "canine",
+        "cat",
+        "cats",
+        "feline",
+        "small animal"
+      ]
+    },
+    {
+      "name": "Tierarztliche Praxis. Ausgabe K, Kleintiere/Heimtiere",
+      "species": "vet",
+      "group": "Non-English veterinary"
+    },
+    {
+      "name": "Schweiz Arch Tierheilkd",
+      "species": "vet",
+      "group": "Non-English veterinary",
+      "must_match": [
+        "dog",
+        "dogs",
+        "canine",
+        "cat",
+        "cats",
+        "feline",
+        "Hund",
+        "Katze"
+      ]
+    },
+    {
+      "name": "J Vet Med Sci",
+      "species": "vet",
+      "group": "Non-English veterinary",
+      "must_match": [
+        "dog",
+        "dogs",
+        "canine",
+        "cat",
+        "cats",
+        "feline"
+      ]
+    },
+    {
+      "name": "Korean J Vet Res",
+      "species": "vet",
+      "group": "Non-English veterinary"
+    },
+    {
+      "name": "J Bone Joint Surg Am",
+      "species": "human",
+      "group": "Human orthopedics"
+    },
+    {
+      "name": "The Bone & Joint Journal",
+      "species": "human",
+      "group": "Human orthopedics"
+    },
+    {
+      "name": "Clinical Orthopaedics and Related Research",
+      "species": "human",
+      "group": "Human orthopedics"
+    },
+    {
+      "name": "J Orthop Res",
+      "species": "human",
+      "group": "Human orthopedics"
+    },
+    {
+      "name": "Journal of Orthopaedic Trauma",
+      "species": "human",
+      "group": "Human orthopedics"
+    },
+    {
+      "name": "Injury",
+      "species": "human",
+      "group": "Human orthopedics"
+    },
+    {
+      "name": "Journal of Neurosurgery. Spine",
+      "species": "human",
+      "group": "Human neurosurgery"
+    },
+    {
+      "name": "Spine",
+      "species": "human",
+      "group": "Human neurosurgery"
+    },
+    {
+      "name": "Neurosurgery",
+      "species": "human",
+      "group": "Human neurosurgery"
+    },
+    {
+      "name": "Annals of Surgery",
+      "species": "human",
+      "group": "Human general surgery"
+    },
+    {
+      "name": "JAMA Surgery",
+      "species": "human",
+      "group": "Human general surgery"
+    },
+    {
+      "name": "Br J Surg",
+      "species": "human",
+      "group": "Human general surgery"
+    },
+    {
+      "name": "Journal of Biomechanics",
+      "species": "human",
+      "group": "Biomechanics",
+      "must_match": [
+        "bone",
+        "fracture",
+        "implant",
+        "plate",
+        "screw",
+        "osteotomy",
+        "joint",
+        "cartilage",
+        "tendon",
+        "ligament",
+        "finite element",
+        "spine",
+        "vertebra"
+      ]
+    },
+    {
+      "name": "Clin Biomech (Bristol)",
+      "species": "human",
+      "group": "Biomechanics"
+    },
+    {
+      "name": "J Biomech Eng",
+      "species": "human",
+      "group": "Biomechanics"
+    },
+    {
+      "name": "Ann Biomed Eng",
+      "species": "human",
+      "group": "Biomechanics",
+      "must_match": [
+        "bone",
+        "fracture",
+        "implant",
+        "joint",
+        "cartilage",
+        "tendon",
+        "ligament",
+        "spine",
+        "gait",
+        "finite element"
+      ]
+    },
+    {
+      "name": "J Mech Behav Biomed Mater",
+      "species": "human",
+      "group": "Biomechanics",
+      "must_match": [
+        "bone",
+        "implant",
+        "titanium",
+        "screw",
+        "plate",
+        "osteotomy",
+        "dental",
+        "cartilage",
+        "3D print",
+        "additive"
+      ]
+    },
+    {
+      "name": "Comput Methods Biomech Biomed Engin",
+      "species": "human",
+      "group": "Biomechanics"
+    },
+    {
+      "name": "Med Eng Phys",
+      "species": "human",
+      "group": "Biomechanics",
+      "must_match": [
+        "bone",
+        "implant",
+        "fracture",
+        "joint",
+        "spine",
+        "prosthes",
+        "finite element"
+      ]
+    },
+    {
+      "name": "Gait Posture",
+      "species": "human",
+      "group": "Biomechanics",
+      "must_match": [
+        "kinemat",
+        "kinetic",
+        "joint",
+        "osteoarthritis",
+        "limb",
+        "gait analysis"
+      ]
+    },
+    {
+      "name": "Bone Joint Res",
+      "species": "human",
+      "group": "Biomechanics"
+    },
+    {
+      "name": "J Orthop Surg Res",
+      "species": "human",
+      "group": "Human orthopedics"
+    },
+    {
+      "name": "Am J Sports Med",
+      "species": "human",
+      "group": "Human orthopedics"
+    },
+    {
+      "name": "Arthroscopy",
+      "species": "human",
+      "group": "Human orthopedics"
+    },
+    {
+      "name": "Knee Surg Sports Traumatol Arthrosc",
+      "species": "human",
+      "group": "Human orthopedics"
+    },
+    {
+      "name": "J Arthroplasty",
+      "species": "human",
+      "group": "Human orthopedics"
+    },
+    {
+      "name": "Acta Orthop",
+      "species": "human",
+      "group": "Human orthopedics"
+    },
+    {
+      "name": "J Shoulder Elbow Surg",
+      "species": "human",
+      "group": "Human orthopedics"
+    },
+    {
+      "name": "J Hand Surg Am",
+      "species": "human",
+      "group": "Human orthopedics"
+    },
+    {
+      "name": "Foot Ankle Int",
+      "species": "human",
+      "group": "Human orthopedics"
+    },
+    {
+      "name": "J Pediatr Orthop",
+      "species": "human",
+      "group": "Human orthopedics"
+    },
+    {
+      "name": "Osteoarthritis Cartilage",
+      "species": "human",
+      "group": "Human orthopedics"
+    },
+    {
+      "name": "Bone",
+      "species": "human",
+      "group": "Human orthopedics",
+      "must_match": [
+        "fracture",
+        "healing",
+        "implant",
+        "osteotomy",
+        "graft",
+        "defect",
+        "biomechanic"
+      ]
+    },
+    {
+      "name": "J Neurosurg",
+      "species": "human",
+      "group": "Human neurosurgery"
+    },
+    {
+      "name": "Spine J",
+      "species": "human",
+      "group": "Human neurosurgery"
+    },
+    {
+      "name": "Eur Spine J",
+      "species": "human",
+      "group": "Human neurosurgery"
+    },
+    {
+      "name": "World Neurosurg",
+      "species": "human",
+      "group": "Human neurosurgery"
+    },
+    {
+      "name": "Acta Neurochir (Wien)",
+      "species": "human",
+      "group": "Human neurosurgery"
+    },
+    {
+      "name": "J Neurotrauma",
+      "species": "human",
+      "group": "Human neurosurgery"
+    },
+    {
+      "name": "Neurosurg Focus",
+      "species": "human",
+      "group": "Human neurosurgery"
+    },
+    {
+      "name": "Global Spine J",
+      "species": "human",
+      "group": "Human neurosurgery"
+    },
+    {
+      "name": "J Clin Oncol",
+      "species": "human",
+      "group": "Human oncology"
+    },
+    {
+      "name": "Lancet Oncol",
+      "species": "human",
+      "group": "Human oncology"
+    },
+    {
+      "name": "JAMA Oncol",
+      "species": "human",
+      "group": "Human oncology"
+    },
+    {
+      "name": "Ann Surg Oncol",
+      "species": "human",
+      "group": "Human oncology"
+    },
+    {
+      "name": "Eur J Surg Oncol",
+      "species": "human",
+      "group": "Human oncology"
+    },
+    {
+      "name": "Cancer",
+      "species": "human",
+      "group": "Human oncology",
+      "must_match": [
+        "surg",
+        "resect",
+        "sarcoma",
+        "osteosarcoma",
+        "metasta",
+        "margin",
+        "radiotherap"
+      ]
+    },
+    {
+      "name": "J Surg Oncol",
+      "species": "human",
+      "group": "Human oncology"
+    },
+    {
+      "name": "HPB (Oxford)",
+      "species": "human",
+      "group": "Hepatobiliary & pancreatic"
+    },
+    {
+      "name": "J Hepatobiliary Pancreat Sci",
+      "species": "human",
+      "group": "Hepatobiliary & pancreatic"
+    },
+    {
+      "name": "J Hepatol",
+      "species": "human",
+      "group": "Hepatobiliary & pancreatic",
+      "must_match": [
+        "resect",
+        "surg",
+        "transplant",
+        "portal",
+        "cirrhos",
+        "hepatocellular"
+      ]
+    },
+    {
+      "name": "Liver Transpl",
+      "species": "human",
+      "group": "Hepatobiliary & pancreatic"
+    },
+    {
+      "name": "Pancreatology",
+      "species": "human",
+      "group": "Hepatobiliary & pancreatic"
+    },
+    {
+      "name": "J Gastrointest Surg",
+      "species": "human",
+      "group": "Hepatobiliary & pancreatic"
+    },
+    {
+      "name": "Surg Endosc",
+      "species": "human",
+      "group": "Hepatobiliary & pancreatic",
+      "must_match": [
+        "laparoscop",
+        "hepat",
+        "pancrea",
+        "biliary",
+        "cholecyst",
+        "liver",
+        "splenectomy"
+      ]
+    }
   ],
-
   "categories": {
-    "Orthopedics": ["fracture", "osteotomy", "arthroplasty", "TPLO", "TTA", "cruciate", "CCL", "patellar", "luxation", "hip", "elbow", "stifle", "carpus", "tarsus", "bone plate", "locking plate", "interlocking nail", "external fixat", "ESF", "CESF", "angular limb", "deformity", "CORA", "osteoarthritis", "cartilage", "arthroscop", "malunion", "nonunion", "osteosarcoma"],
-    "Neurosurgery": ["spinal", "spine", "vertebra", "intervertebral", "IVDD", "IVDE", "disc herniation", "hemilaminectomy", "ventral slot", "myelopathy", "atlantoaxial", "brain", "intracranial", "craniotomy", "seizure", "MRI", "nerve"],
-    "Soft tissue surgery": ["hepat", "liver lobe", "portosystemic", "shunt", "gastrointestinal", "gastropexy", "splenectomy", "adrenalectomy", "thoracotomy", "thoracoscop", "laparoscop", "urethr", "cystotomy", "nephrectomy", "ureter", "hernia", "wound", "skin flap", "reconstruct", "oncologic surgery", "mass excision", "anal sac", "perineal"],
-    "Biomechanics & implants": ["biomechanic", "finite element", "FEA", "stiffness", "load to failure", "cyclic", "fatigue", "3D print", "three-dimensional print", "patient-specific", "custom implant", "titanium", "PEEK", "CAD", "additive manufactur"],
-    "Imaging & planning": ["computed tomography", "CT", "radiograph", "ultrasound", "3D reconstruction", "surgical planning", "virtual planning", "navigation"],
-    "Anesthesia & pain": ["anesthes", "anaesthes", "analges", "nerve block", "epidural", "opioid", "sedation"],
-    "Oncology": ["tumor", "tumour", "neoplas", "carcinoma", "sarcoma", "lymphoma", "chemotherap", "radiation therapy", "oncolog", "metasta"],
-    "Internal medicine": ["endocrin", "cardiol", "nephrol", "renal", "gastroenterol", "dermatol", "immune-mediated", "diabet", "hyperadrenocortic", "hypothyroid"],
-    "Complications & outcomes": ["complication", "outcome", "prognos", "surgical site infection", "SSI", "survival", "recurrence", "revision"]
+    "Orthopedics": [
+      "fracture",
+      "osteotomy",
+      "arthroplasty",
+      "TPLO",
+      "TTA",
+      "cruciate",
+      "CCL",
+      "patellar",
+      "luxation",
+      "hip",
+      "elbow",
+      "stifle",
+      "carpus",
+      "tarsus",
+      "bone plate",
+      "locking plate",
+      "interlocking nail",
+      "external fixat",
+      "ESF",
+      "CESF",
+      "angular limb",
+      "deformity",
+      "CORA",
+      "osteoarthritis",
+      "cartilage",
+      "arthroscop",
+      "malunion",
+      "nonunion",
+      "osteosarcoma"
+    ],
+    "Neurosurgery": [
+      "spinal",
+      "spine",
+      "vertebra",
+      "intervertebral",
+      "IVDD",
+      "IVDE",
+      "disc herniation",
+      "hemilaminectomy",
+      "ventral slot",
+      "myelopathy",
+      "atlantoaxial",
+      "brain",
+      "intracranial",
+      "craniotomy",
+      "seizure",
+      "MRI",
+      "nerve"
+    ],
+    "Soft tissue surgery": [
+      "hepat",
+      "liver lobe",
+      "portosystemic",
+      "shunt",
+      "gastrointestinal",
+      "gastropexy",
+      "splenectomy",
+      "adrenalectomy",
+      "thoracotomy",
+      "thoracoscop",
+      "laparoscop",
+      "urethr",
+      "cystotomy",
+      "nephrectomy",
+      "ureter",
+      "hernia",
+      "wound",
+      "skin flap",
+      "reconstruct",
+      "oncologic surgery",
+      "mass excision",
+      "anal sac",
+      "perineal"
+    ],
+    "Biomechanics & implants": [
+      "biomechanic",
+      "finite element",
+      "FEA",
+      "stiffness",
+      "load to failure",
+      "cyclic",
+      "fatigue",
+      "3D print",
+      "three-dimensional print",
+      "patient-specific",
+      "custom implant",
+      "titanium",
+      "PEEK",
+      "CAD",
+      "additive manufactur"
+    ],
+    "Imaging & planning": [
+      "computed tomography",
+      "CT",
+      "radiograph",
+      "ultrasound",
+      "3D reconstruction",
+      "surgical planning",
+      "virtual planning",
+      "navigation"
+    ],
+    "Anesthesia & pain": [
+      "anesthes",
+      "anaesthes",
+      "analges",
+      "nerve block",
+      "epidural",
+      "opioid",
+      "sedation"
+    ],
+    "Oncology": [
+      "tumor",
+      "tumour",
+      "neoplas",
+      "carcinoma",
+      "sarcoma",
+      "lymphoma",
+      "chemotherap",
+      "radiation therapy",
+      "oncolog",
+      "metasta"
+    ],
+    "Internal medicine": [
+      "endocrin",
+      "cardiol",
+      "nephrol",
+      "renal",
+      "gastroenterol",
+      "dermatol",
+      "immune-mediated",
+      "diabet",
+      "hyperadrenocortic",
+      "hypothyroid"
+    ],
+    "Complications & outcomes": [
+      "complication",
+      "outcome",
+      "prognos",
+      "surgical site infection",
+      "SSI",
+      "survival",
+      "recurrence",
+      "revision"
+    ]
   },
-
   "category_fallback": "Other",
-
   "study_type_hints": {
-    "Randomized": ["randomized", "randomised"],
-    "Systematic review / meta-analysis": ["systematic review", "meta-analysis"],
-    "Prospective": ["prospective"],
-    "Retrospective": ["retrospective"],
-    "Cadaveric / experimental": ["cadaver", "ex vivo", "in vitro", "biomechanical"],
-    "Case report / series": ["case report", "case series"]
+    "Randomized": [
+      "randomized",
+      "randomised"
+    ],
+    "Systematic review / meta-analysis": [
+      "systematic review",
+      "meta-analysis"
+    ],
+    "Prospective": [
+      "prospective"
+    ],
+    "Retrospective": [
+      "retrospective"
+    ],
+    "Cadaveric / experimental": [
+      "cadaver",
+      "ex vivo",
+      "in vitro",
+      "biomechanical"
+    ],
+    "Case report / series": [
+      "case report",
+      "case series"
+    ]
   }
 }

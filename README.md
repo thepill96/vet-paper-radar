@@ -144,6 +144,9 @@ update public.profiles set is_admin = true, status = 'approved' where email = '�
 
 참고: 인스타그램 가이드처럼 Claude 데스크탑 루틴 + PubMed/Notion 커넥터만으로도 비슷한 흐름을 만들 수 있습니다. 차이는 이 사이트가 저널·키워드 필터, 동료별 로그인·히스토리, 한/영 병기, Obsidian·Anki·Readwise까지 한 곳에서 처리한다는 점이고, Notion은 그중 하나의 출구가 됩니다.
 
+## 저널 표기 확인
+저널명이 PubMed 표기와 다르면 수집이 조용히 0건이 됩니다. 저널을 추가한 뒤에는 Actions → **Check journal names** → Run workflow 를 돌리세요. 저널마다 전체·최근 논문 수를 찍고, 검색되지 않는 표기는 ✗로 모아서 알려줍니다.
+
 ## 저널·분야 바꾸기
 `config/sources.json`만 고치고 push하면 다음 수집부터 반영됩니다.
 - 저널 추가: `{ "name": "PubMed 정식 저널명", "species": "vet" 또는 "human", "group": "표시용 묶음" }`. 양이 많은 저널은 `must_match`에 키워드를 넣어 제목/초록에 그 단어가 있을 때만 수집.
