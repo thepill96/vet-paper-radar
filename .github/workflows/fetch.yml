@@ -33,6 +33,14 @@ jobs:
           NCBI_API_KEY: ${{ secrets.NCBI_API_KEY }}
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
           MAX_SUMMARIES: ${{ github.event.inputs.max_summaries || '0' }}
+      - name: Prune old untouched papers if near storage limit
+        if: always()
+        run: python scripts/prune.py
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          PRUNE_TARGET_MB: ${{ vars.PRUNE_TARGET_MB || '420' }}
+          PRUNE_KEEP_DAYS: ${{ vars.PRUNE_KEEP_DAYS || '365' }}
       - name: Recommendations + digest email
         if: always()
         run: python scripts/recommend.py

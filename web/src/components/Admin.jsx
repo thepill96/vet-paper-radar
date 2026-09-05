@@ -79,7 +79,7 @@ export default function Admin({ user }) {
 
       {overview && (
         <div className="stat-grid">
-          {[["papers", overview.papers], ["papers7d", overview.papers_7d], ["summarized", overview.summarized], ["membersCount", overview.members], ["pending", overview.pending], ["comments", overview.comments], ["feedbackNew", overview.feedback_new]].map(([k, v]) => (
+          {[["papers", overview.papers], ["papers7d", overview.papers_7d], ["summarized", overview.summarized], ["membersCount", overview.members], ["pending", overview.pending], ["comments", overview.comments], ["feedbackNew", overview.feedback_new], ["storage", overview.db_bytes ? `${(overview.db_bytes / 1048576).toFixed(0)}MB` : "—"], ["protectedPapers", overview.protected]].map(([k, v]) => (
             <div key={k} className={`stat ${k === "pending" && v > 0 ? "hot" : ""}`}><div className="stat-n">{v}</div><div className="stat-l">{t(`admin.${k}`)}</div></div>
           ))}
         </div>
