@@ -96,14 +96,14 @@ export default function PaperDetail({ paper, state, defaultLang = "en", user, me
           ) : (
             <div className="summary-empty">
               <span>{paper.abstract ? t("reader.noSummary") : t("reader.noAbstractTitle")}</span>
-              <button className="btn primary" disabled={busy || !paper.abstract} onClick={run(() => onSummarize(paper.id))}>{busy ? <><span className="spin" />{t("reader.generating")}</> : t("reader.generate")}</button>
+              <button className="btn primary" disabled={busy || (!paper.abstract && !paper.abstract_pruned)} onClick={run(() => onSummarize(paper.id))}>{busy ? <><span className="spin" />{t("reader.generating")}</> : t("reader.generate")}</button>
             </div>
           )}
         </div>
         {err && <div className="err" style={{ margin: "8px 0 0" }}>{err}</div>}
 
         <h2>{t("reader.abstract")}</h2>
-        <div className="abstract">{paper.abstract || t("reader.noAbstract")}</div>
+        <div className="abstract">{paper.abstract || (paper.abstract_pruned ? <span className="muted"><span className="spin" />{t("reader.restoring")}</span> : t("reader.noAbstract"))}</div>
 
         <h2>{t("reader.notes")}</h2>
         <div className="note">

@@ -283,6 +283,19 @@ Deno.serve(async (req) => {
       return json({ total, page, results: papers.map((p) => ({ ...p, in_library: have.has(p.pmid) })) });
     }
 
+    if (body.action === "rehydrate") {
+      // 정리로 초록이 비워진 논문을 PubMed에서 다시 받아 채운다
+      const { data: row } = await admin.from("papers").select("id,pmid,abstract").eq("id", body.paper_id).single();
+      if (!row) return json({ error: "논문을 찾을 수 없습니다" }, 404);
+      if (row.abstract) return json({ abstract: row.abstract, abstract_pruned: false });
+      const [fresh] = await fetchDetails([row.pmid]);
+      if (!fresh) return json({ error: "PubMed에서 받아오지 못했습니다" }, 502);
+      const patch = { abstract: fresh.abstract || null, abstract_pruned: false,
+                      authors: fresh.authors, vernacular_title: fresh.vernacular_title };
+      await admin.from("papers").update(patch).eq("id", row.id);
+      return json(patch);
+    }
+
     if (body.action === "import") {
       const pmids: string[] = (body.pmids ?? []).slice(0, 50);
       if (!pmids.length) return json({ error: "가져올 논문이 없습니다" }, 400);

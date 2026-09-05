@@ -178,8 +178,19 @@ function Shell() {
   useEffect(() => { if (listView) { setPage(0); load(0, true); } }, [view, filters, query, group, user?.id, approved]); // eslint-disable-line
   const more = () => { const n = page + 1; setPage(n); load(n, false); };
 
+  async function rehydrate(paper) {
+    // 정리로 초록이 비워진 논문은 열 때 PubMed에서 다시 받아 채운다
+    if (!paper?.abstract_pruned || paper.abstract) return;
+    try {
+      const patch = await callFunction("pubmed", { action: "rehydrate", paper_id: paper.id });
+      setSelected((s) => (s?.id === paper.id ? { ...s, ...patch } : s));
+      setPapers((ps) => ps.map((x) => (x.id === paper.id ? { ...x, ...patch } : x)));
+    } catch (e) { setToast(e.message); }
+  }
+
   async function select(p) {
     setSelected(p);
+    rehydrate(p);
     if (lastViewed.current !== p.id) {
       lastViewed.current = p.id;
       supabase.from("view_history").insert({ user_id: user.id, paper_id: p.id });
@@ -195,6 +206,9 @@ function Shell() {
   const toggle = (id, key) => upsertState(id, { [key]: !states[id]?.[key] });
   const saveNote = (id, note) => upsertState(id, { note });
   async function summarize(paperId) {
+    // 초록이 비워진 논문이면 먼저 복원한 뒤 요약한다
+    const target = papers.find((p) => p.id === paperId) || selected;
+    if (target?.abstract_pruned && !target.abstract) await rehydrate(target);
     const patch = await callFunction("summarize", { paper_id: paperId });
     setPapers((ps) => ps.map((p) => (p.id === paperId ? { ...p, ...patch } : p)));
     setSelected((s) => (s?.id === paperId ? { ...s, ...patch } : s));
