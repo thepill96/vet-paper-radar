@@ -154,16 +154,36 @@ def sb_get(path, params):
     return r.json()
 
 
-def upsert_papers(rows):
+def _post_chunk(chunk, h, depth=0):
+    """한 덩어리를 저장한다. 타임아웃이면 절반으로 쪼개 재시도."""
+    r = requests.post(f"{SUPABASE_URL}/rest/v1/papers?on_conflict=pmid",
+                      headers=h, data=json.dumps(chunk), timeout=180)
+    if r.status_code < 300:
+        return len(chunk)
+    timeout_like = r.status_code in (500, 502, 503, 504) and ("57014" in r.text or "timeout" in r.text.lower())
+    if timeout_like and len(chunk) > 1 and depth < 6:
+        mid = len(chunk) // 2
+        return _post_chunk(chunk[:mid], h, depth + 1) + _post_chunk(chunk[mid:], h, depth + 1)
+    if timeout_like and len(chunk) == 1:
+        print(f"[skip] PMID {chunk[0].get('pmid')} 저장 실패(timeout)", file=sys.stderr)
+        return 0
+    print("Upsert error:", r.status_code, r.text[:300], file=sys.stderr)
+    r.raise_for_status()
+
+
+def upsert_papers(rows, chunk_size=50):
+    """PMID 중복을 제거하고 작은 덩어리로 나눠 저장한다. 과거 논문 대량 수집에도 견디도록."""
     if not rows:
-        return
+        return 0
+    uniq = {}
+    for row in rows:
+        uniq[row["pmid"]] = row
+    rows = list(uniq.values())
     h = dict(SB_HEADERS, Prefer="resolution=merge-duplicates,return=minimal")
-    for i in range(0, len(rows), 200):
-        r = requests.post(f"{SUPABASE_URL}/rest/v1/papers?on_conflict=pmid",
-                          headers=h, data=json.dumps(rows[i:i + 200]), timeout=120)
-        if r.status_code >= 300:
-            print("Upsert error:", r.status_code, r.text[:500], file=sys.stderr)
-            r.raise_for_status()
+    done = 0
+    for i in range(0, len(rows), chunk_size):
+        done += _post_chunk(rows[i:i + chunk_size], h)
+    return done
 
 
 def patch_paper(pmid, data):
@@ -229,7 +249,7 @@ def summarize(paper):
 
 # ---------- main ----------
 def main():
-    seen, rows = set(), []
+    seen, total_saved = set(), 0
     for j in CFG["journals"]:
         try:
             ids = search_journal(j["name"], j.get("must_match"))
@@ -241,6 +261,7 @@ def main():
         if not ids:
             print(f"{j['name']}: 0  (0건이 계속되면 저널명이 PubMed 표기와 다른지 확인)")
             continue
+        batch = []
         for p in fetch_details(ids):
             if not p["abstract"] and "Editorial" in p["pub_types"]:
                 continue
@@ -248,16 +269,24 @@ def main():
             p.update(species=j["species"], journal_group=j.get("group", ""), categories=cats,
                      study_type_hint=study)
             p.pop("pub_types", None)
-            rows.append(p)
-        print(f"{j['name']}: {len(ids)}")
+            batch.append(p)
+        try:
+            saved = upsert_papers(batch)
+        except Exception as e:
+            print(f"[저장 실패] {j['name']}: {e}", file=sys.stderr)
+            saved = 0
+        total_saved += saved
+        print(f"{j['name']}: {len(ids)} 건 검색 / {saved} 건 저장", flush=True)
 
-    upsert_papers(rows)
-    print(f"Upserted {len(rows)} papers")
+    print(f"Upserted {total_saved} papers")
 
     if not ANTHROPIC_KEY:
         print("ANTHROPIC_API_KEY 없음 — 요약 건너뜀")
         return
-    limit = int(os.environ.get("MAX_SUMMARIES") or CFG.get("max_ai_summaries_per_run", 40))
+    limit = int(os.environ.get("MAX_SUMMARIES") or CFG.get("max_ai_summaries_per_run", 0))
+    if limit <= 0:
+        print("자동 요약 없음 (MAX_SUMMARIES=0) — 수집만 수행. 요약은 사이트의 'AI 요약 생성' 버튼으로 만듭니다.")
+        return
     pending = sb_get("papers", {"select": "id,pmid,title,journal,pub_date,abstract,language",
                                 "summarized_at": "is.null", "abstract": "neq.",
                                 "order": "created_at.desc", "limit": limit})

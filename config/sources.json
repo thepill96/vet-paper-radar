@@ -1,7 +1,7 @@
 {
-  "_readme": "PubMed collection config (category/group/design names are English keys; the UI translates them). PubMed 수집 설정. 언어 제한 없음(영어·한국어·일본어·독일어 등 모두 수집, 요약은 항상 한/영 두 버전 생성). 비영어권 저널을 더 넣으려면 journals에 추가하면 됨. journals: 저널명은 PubMed [Journal] 필드에 그대로 쓰이는 정식 명칭(또는 NLM 약어). must_match: 인의 저널처럼 양이 많은 곳은 여기 키워드 중 하나 이상이 제목/초록에 있어야 수집됨(비우면 전부 수집). categories: 제목+초록에 키워드가 하나라도 있으면 해당 분야 태그. lookback_days: 매 실행 시 최근 며칠치를 볼지. max_ai_summaries_per_run: 실행당 Claude 요약 생성 상한(비용 통제).",
+  "_readme": "PubMed collection config (category/group/design names are English keys; the UI translates them). PubMed 수집 설정. 언어 제한 없음(영어·한국어·일본어·독일어 등 모두 수집, 요약은 항상 한/영 두 버전 생성). 비영어권 저널을 더 넣으려면 journals에 추가하면 됨. journals: 저널명은 PubMed [Journal] 필드에 그대로 쓰이는 정식 명칭(또는 NLM 약어). must_match: 인의 저널처럼 양이 많은 곳은 여기 키워드 중 하나 이상이 제목/초록에 있어야 수집됨(비우면 전부 수집). categories: 제목+초록에 키워드가 하나라도 있으면 해당 분야 태그. lookback_days: 매 실행 시 최근 며칠치를 볼지. max_ai_summaries_per_run: 실행당 Claude 요약 생성 상한. 0이면 자동 요약을 하지 않고 수집만 한다(요약은 사이트의 버튼으로 필요할 때만).",
   "lookback_days": 3,
-  "max_ai_summaries_per_run": 40,
+  "max_ai_summaries_per_run": 0,
   "summary_model": "claude-sonnet-4-6",
   "journals": [
     {

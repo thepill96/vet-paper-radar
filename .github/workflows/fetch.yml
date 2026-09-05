@@ -9,8 +9,8 @@ on:
         description: "최근 며칠치를 수집할지 (과거 논문 일괄 수집: 365, 1825 등)"
         default: "3"
       max_summaries:
-        description: "이번 실행에서 만들 AI 요약 개수 (과거 논문 일괄 요약: 500~2000, 편당 약 2~3원)"
-        default: "40"
+        description: "이번 실행에서 만들 AI 요약 개수 (기본 0 = 요약 없이 수집만. 일괄 요약이 필요할 때만 숫자를 넣으세요)"
+        default: "0"
       force_digest:
         description: "추천 메일 지금 바로 보내기 (테스트용, 1로 설정)"
         default: "0"
@@ -32,7 +32,7 @@ jobs:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           NCBI_API_KEY: ${{ secrets.NCBI_API_KEY }}
           LOOKBACK_DAYS: ${{ github.event.inputs.lookback_days || '3' }}
-          MAX_SUMMARIES: ${{ github.event.inputs.max_summaries || '40' }}
+          MAX_SUMMARIES: ${{ github.event.inputs.max_summaries || '0' }}
       - name: Recommendations + digest email
         if: always()
         run: python scripts/recommend.py

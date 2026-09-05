@@ -23,7 +23,7 @@ export default function About() {
         <div className="kw-grid">{Object.entries(sources.categories).map(([cat, kws]) => <div key={cat} className="kw-card"><b>{t(`cat.${cat}`)}</b><div className="kw">{kws.join(" · ")}</div></div>)}</div>
         <p style={{ marginTop: 12 }}><b>{t("about.designHints")}:</b> {Object.entries(sources.study_type_hints).map(([k, v]) => `${t(`design.${k}`)} (${v.join(", ")})`).join(" · ")}</p>
       </section>
-      <section><h2>3 · {t("about.summarise")}</h2><p>{t("about.summariseHint", { n: sources.max_ai_summaries_per_run })}</p></section>
+      <section><h2>3 · {t("about.summarise")}</h2><p>{sources.max_ai_summaries_per_run > 0 ? t("about.summariseHint", { n: sources.max_ai_summaries_per_run }) : t("about.summariseManual")}</p></section>
       <section><h2>4 · {t("about.recommend")}</h2><p>{t("about.recommendHint")}</p></section>
       <section>
         <h2>{t("about.journals")}</h2>
